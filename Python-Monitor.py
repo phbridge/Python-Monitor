@@ -86,7 +86,7 @@ def process_hosts_in_serial():
 def process_hosts_in_parallel():
     logger.info("----------- Processing Parallel -----------")
     results = ""
-    with Pool(processes=150) as pool:
+    with Pool(processes=30) as pool:
         array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
         array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
         array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
@@ -394,25 +394,25 @@ def curlv4(host_dictionary):
     if fail > 0:
         drop_pc += fail * (100 / count)
 
-    results += 'curlv4_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_average)*100)))
-    results += 'curlv4_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_min)*100)))
-    results += 'curlv4_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_max)*100)))
+    results += 'curlv4_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_average)*1000)))
+    results += 'curlv4_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_min)*1000)))
+    results += 'curlv4_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_max)*1000)))
 
-    results += 'curlv4_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_average)*100)))
-    results += 'curlv4_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_min)*100)))
-    results += 'curlv4_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_max)*100)))
+    results += 'curlv4_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_average)*1000)))
+    results += 'curlv4_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_min)*1000)))
+    results += 'curlv4_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_max)*1000)))
 
-    results += 'curlv4_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_average)*100)))
-    results += 'curlv4_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_min)*100)))
-    results += 'curlv4_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_max)*100)))
+    results += 'curlv4_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
+    results += 'curlv4_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
+    results += 'curlv4_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
 
     # results += 'curlv4_start_transfer_Avg{host="%s"} %s\n' % (url, str("{:.2f}".format(float(curl_start_transfer_average)*100)))
     # results += 'curlv4_start_transfer_Min{host="%s"} %s\n' % (url, str("{:.2f}".format(float(curl_start_transfer_min)*100)))
     # results += 'curlv4_start_transfer_Max{host="%s"} %s\n' % (url, str("{:.2f}".format(float(curl_start_transfer_max)*100)))
 
-    results += 'curlv4_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_average)*100)))
-    results += 'curlv4_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_min)*100)))
-    results += 'curlv4_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_max)*100)))
+    results += 'curlv4_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
+    results += 'curlv4_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
+    results += 'curlv4_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
 
     results += 'curlv4_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
 
@@ -543,25 +543,25 @@ def curlv6(host_dictionary):
     if fail > 0:
         drop_pc += fail * (100 / count)
 
-    results += 'curlv6_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_average))))
-    results += 'curlv6_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_min))))
-    results += 'curlv6_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_max))))
+    results += 'curlv6_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_average)*1000)))
+    results += 'curlv6_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_min)*1000)))
+    results += 'curlv6_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_max)*1000)))
 
-    results += 'curlv6_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_average))))
-    results += 'curlv6_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_min))))
-    results += 'curlv6_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_max))))
+    results += 'curlv6_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_average)*1000)))
+    results += 'curlv6_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_min)*1000)))
+    results += 'curlv6_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_max)*1000)))
 
-    results += 'curlv6_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_average))))
-    results += 'curlv6_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_min))))
-    results += 'curlv6_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_max))))
+    results += 'curlv6_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_average)*1000)))
+    results += 'curlv6_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_min)*1000)))
+    results += 'curlv6_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_max)*1000)))
 
     # results += 'curlv6_start_transfer_Avg{host="%s"} %s\n' % (url, str("{:.4f}".format(float(curl_start_transfer_average))))
     # results += 'curlv6_start_transfer_Min{host="%s"} %s\n' % (url, str("{:.4f}".format(float(curl_start_transfer_min))))
     # results += 'curlv6_start_transfer_Max{host="%s"} %s\n' % (url, str("{:.4f}".format(float(curl_start_transfer_max))))
 
-    results += 'curlv6_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_average))))
-    results += 'curlv6_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_min))))
-    results += 'curlv6_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_max))))
+    results += 'curlv6_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_average)*1000)))
+    results += 'curlv6_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_min)*1000)))
+    results += 'curlv6_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_max)*1000)))
 
     results += 'curlv6_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
 
