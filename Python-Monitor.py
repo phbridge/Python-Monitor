@@ -49,322 +49,554 @@ from flask import Response          # Flask to serve pages
 import logging.handlers             # Needed for loggin
 import time                         # Only for time.sleep
 import wsgiserver                   # from gevent.wsgi
-import argparse                     # Only used for debugging and EULA
 import paramiko                     # used for the SSH session
 import socket                       # only used to raise socket exceptions
 from multiprocessing import Pool    # trying to run in parallel rather than in sequence
 import credentials
+import traceback
+import sys
+import json
+from scapy.all import Ether, IP, IPv6, ICMP, ICMPv6EchoRequest, sr
+import pycurl
 
-server_IP = credentials.FLASK_HOST
-server_port = credentials.FLASK_PORT
-logfile = credentials.LOGFILE
-logCount = credentials.LOGCOUNT
-logBytes = credentials.LOGBYTES
-web_app = Flask('router_nat_stats')
-
-
-def run_command(session, command, wait):
-    output = ""
-    session.send(command + "\n")
-    time.sleep(wait)       # TODO implement something better than sleep here?
-    output = session.recv(65535).decode("utf-8")
-    return output
-
-
-def get_total_nat_translations(session, os_type, seed_hostname):
-    if os_type == "IOS-XE":
-        active_nat_stats_raw = run_command(session, "sho ip nat statistics | i Total active translations", 1)
-    elif os_type == "IOS":
-        active_nat_stats_raw = run_command(session, "sho ip nat statistics | i Total active translations", 1)
-    else:
-        logger.warning(seed_hostname + " ########## OS Not Supported for Active_NAT_Total ##########")
-        results = 'NAT_Active_NAT_Total{host="%s"} %s\n' % (seed_hostname, str(-1))
-        return results
-    logger.debug(seed_hostname + "raw nat output " + active_nat_stats_raw)
-    active_nat_stats = active_nat_stats_raw.splitlines()[-2].split(" ")[3]
-    logger.info(seed_hostname + " active_nat_stats " + active_nat_stats)
-    results = 'NAT_Active_NAT_Total{host="%s"} %s\n' % (seed_hostname, str(active_nat_stats))
-    return results
-
-
-def get_total_tcp_nat_translations(session, os_type, seed_hostname):
-    if os_type == "IOS-XE":
-        active_nat_stats_raw = run_command(session, "sho ip nat translations tcp total", 1)
-        active_nat_stats = active_nat_stats_raw.splitlines()[-3].split(" ")[4]
-    elif os_type == "IOS":
-        active_nat_stats_raw = run_command(session, "sho ip nat translations tcp | count tcp", 1)
-        active_nat_stats = active_nat_stats_raw.splitlines()[-2].split(" ")[7]
-    else:
-        logger.warning(seed_hostname + " ########## OS Not Supported for Active_NAT_TCP ##########")
-        results = 'NAT_Active_NAT_TCP{host="%s"} %s\n' % (seed_hostname, str(-1))
-        return results
-    logger.debug(seed_hostname + "raw nat output " + active_nat_stats_raw)
-    logger.info(seed_hostname + " active_nat_tcp_stats " + active_nat_stats)
-    results = 'NAT_Active_NAT_TCP{host="%s"} %s\n' % (seed_hostname, str(active_nat_stats))
-    return results
-
-
-def get_total_udp_nat_translations(session, os_type, seed_hostname):
-    if os_type == "IOS-XE":
-        active_nat_stats_raw = run_command(session, "sho ip nat translations udp total", 1)
-        active_nat_stats = active_nat_stats_raw.splitlines()[-3].split(" ")[4]
-    elif os_type == "IOS":
-        active_nat_stats_raw = run_command(session, "sho ip nat translations udp | count udp", 1)
-        active_nat_stats = active_nat_stats_raw.splitlines()[-2].split(" ")[7]
-    else:
-        logger.warning(seed_hostname + " ########## OS Not Supported for Active_NAT_UDP ##########")
-        results = 'NAT_Active_NAT_UDP{host="%s"} %s\n' % (seed_hostname, str(-1))
-        return results
-    logger.debug(seed_hostname + "raw nat output " + active_nat_stats_raw)
-    logger.info(seed_hostname + " active_nat_tcp_stats " + active_nat_stats)
-    results = 'NAT_Active_NAT_UDP{host="%s"} %s\n' % (seed_hostname, str(active_nat_stats))
-    return results
-
-
-def get_total_icmp_nat_translations(session, os_type, seed_hostname):
-    if os_type == "IOS-XE":
-        active_nat_stats_raw = run_command(session, "sho ip nat translations icmp total", 1)
-        active_nat_stats = active_nat_stats_raw.splitlines()[-3].split(" ")[4]
-    elif os_type == "IOS":
-        active_nat_stats_raw = run_command(session, "sho ip nat translations icmp | count icmp", 1)
-        active_nat_stats = active_nat_stats_raw.splitlines()[-2].split(" ")[7]
-    else:
-        logger.warning(seed_hostname + " ########## OS Not Supported for Active_NAT_ICMP ##########")
-        results = 'NAT_Active_NAT_ICMP{host="%s"} %s\n' % (seed_hostname, str(-1))
-        return results
-    logger.debug(seed_hostname + "raw nat output " + active_nat_stats_raw)
-    logger.info(seed_hostname + " active_nat_tcp_stats " + active_nat_stats)
-    results = 'NAT_Active_NAT_ICMP{host="%s"} %s\n' % (seed_hostname, str(active_nat_stats))
-    return results
-
-
-def login_to_host(seed_hostname, seed_username, seed_password, device_OS):
-    crawler_connection_pre = paramiko.SSHClient()
-    crawler_connection_pre.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    results = ""
-    try:
-        logger.debug(seed_hostname + " Starting connection")
-        crawler_connection_pre.connect(hostname=seed_hostname,
-                                       port=22,
-                                       username=seed_username,
-                                       password=seed_password,
-                                       look_for_keys=False,
-                                       allow_agent=False,
-                                       timeout=10)
-        logger.debug(seed_hostname + " Invoking Shell")
-        crawler_connected = crawler_connection_pre.get_transport().open_session()
-        crawler_connected.invoke_shell()
-
-        run_command(crawler_connected, "terminal length 0", 1)
-
-        results += get_total_nat_translations(crawler_connected, device_OS, seed_hostname)
-        results += get_total_tcp_nat_translations(crawler_connected, device_OS, seed_hostname)
-        results += get_total_udp_nat_translations(crawler_connected, device_OS, seed_hostname)
-        results += get_total_icmp_nat_translations(crawler_connected, device_OS, seed_hostname)
-
-        qos_output_raw = run_command(crawler_connected, "sho policy-map interface output | i pkts|no-buffer", 1)
-
-        QoS_PLAT_Pkts = int(qos_output_raw.splitlines()[-12].split(" ")[-1].split("/")[0])
-        QoS_PLAT_Bytes = int(qos_output_raw.splitlines()[-12].split(" ")[-1].split("/")[1])
-        QoS_PLAT_Drops = int(qos_output_raw.splitlines()[-13].split("/")[-2])
-        QoS_GOLD_Pkts = int(qos_output_raw.splitlines()[-10].split(" ")[-1].split("/")[0])
-        QoS_GOLD_Bytes = int(qos_output_raw.splitlines()[-10].split(" ")[-1].split("/")[1])
-        QoS_GOLD_Drops = int(qos_output_raw.splitlines()[-11].split("/")[-3])
-        QoS_SILVER_Pkts = int(qos_output_raw.splitlines()[-8].split(" ")[-1].split("/")[0])
-        QoS_SILVER_Bytes = int(qos_output_raw.splitlines()[-8].split(" ")[-1].split("/")[1])
-        QoS_SILVER_Drops = int(qos_output_raw.splitlines()[-9].split("/")[-3])
-        QoS_BRONZE_Pkts = int(qos_output_raw.splitlines()[-6].split(" ")[-1].split("/")[0])
-        QoS_BRONZE_Bytes = int(qos_output_raw.splitlines()[-6].split(" ")[-1].split("/")[1])
-        QoS_BRONZE_Drops = int(qos_output_raw.splitlines()[-7].split("/")[-3])
-        QoS_TIN_Pkts = int(qos_output_raw.splitlines()[-4].split(" ")[-1].split("/")[0])
-        QoS_TIN_Bytes = int(qos_output_raw.splitlines()[-4].split(" ")[-1].split("/")[1])
-        QoS_TIN_Drops = int(qos_output_raw.splitlines()[-5].split("/")[-3])
-        QoS_DEFAULT_Pkts = int(qos_output_raw.splitlines()[-2].split(" ")[-1].split("/")[0])
-        QoS_DEFAULT_Bytes = int(qos_output_raw.splitlines()[-2].split(" ")[-1].split("/")[1])
-        QoS_DEFAULT_Drops = int(qos_output_raw.splitlines()[-3].split("/")[-3])
-
-
-
-        results += 'QoS_PLAT_OUT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Pkts))
-        results += 'QoS_PLAT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Pkts))
-        results += 'QoS_PLAT_OUT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Bytes))
-        results += 'QoS_PLAT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Bytes))
-        results += 'QoS_PLAT_OUT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Drops))
-        results += 'QoS_PLAT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Drops))
-        results += 'QoS_GOLD_OUT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Pkts))
-        results += 'QoS_GOLD_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Pkts))
-        results += 'QoS_GOLD_OUT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Bytes))
-        results += 'QoS_GOLD_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Bytes))
-        results += 'QoS_GOLD_OUT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Drops))
-        results += 'QoS_GOLD_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Drops))
-        results += 'QoS_SILVER_OUT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Pkts))
-        results += 'QoS_SILVER_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Pkts))
-        results += 'QoS_SILVER_OUT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Bytes))
-        results += 'QoS_SILVER_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Bytes))
-        results += 'QoS_SILVER_OUT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Drops))
-        results += 'QoS_SILVER_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Drops))
-        results += 'QoS_BRONZE_OUT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Pkts))
-        results += 'QoS_BRONZE_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Pkts))
-        results += 'QoS_BRONZE_OUT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Bytes))
-        results += 'QoS_BRONZE_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Bytes))
-        results += 'QoS_BRONZE_OUT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Drops))
-        results += 'QoS_BRONZE_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Drops))
-        results += 'QoS_TIN_OUT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Pkts))
-        results += 'QoS_TIN_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Pkts))
-        results += 'QoS_TIN_OUT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Bytes))
-        results += 'QoS_TIN_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Bytes))
-        results += 'QoS_TIN_OUT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Drops))
-        results += 'QoS_TIN_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Drops))
-        results += 'QoS_DEFAULT_OUT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Pkts))
-        results += 'QoS_DEFAULT_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Pkts))
-        results += 'QoS_DEFAULT_OUT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Bytes))
-        results += 'QoS_DEFAULT_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Bytes))
-        results += 'QoS_DEFAULT_OUT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Drops))
-        results += 'QoS_DEFAULT_Drops{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Drops))
-
-        qos_output_raw_raw = run_command(crawler_connected, "sho policy-map interface input | i packets", 1)
-
-        #Neeed to have this goofing as IOS and IOS-XE output is different
-
-        for line in qos_output_raw_raw.splitlines():
-            if "        " not in str(line):
-                qos_output_raw += str(line + "\n")
-
-        QoS_PLAT_Pkts = int(qos_output_raw.splitlines()[-7].split(" ")[-4])
-        QoS_PLAT_Bytes = int(qos_output_raw.splitlines()[-7].split(" ")[-2])
-        QoS_GOLD_Pkts = int(qos_output_raw.splitlines()[-6].split(" ")[-4])
-        QoS_GOLD_Bytes = int(qos_output_raw.splitlines()[-6].split(" ")[-2])
-        QoS_SILVER_Pkts = int(qos_output_raw.splitlines()[-5].split(" ")[-4])
-        QoS_SILVER_Bytes = int(qos_output_raw.splitlines()[-5].split(" ")[-2])
-        QoS_BRONZE_Pkts = int(qos_output_raw.splitlines()[-4].split(" ")[-4])
-        QoS_BRONZE_Bytes = int(qos_output_raw.splitlines()[-4].split(" ")[-2])
-        QoS_TIN_Pkts = int(qos_output_raw.splitlines()[-3].split(" ")[-4])
-        QoS_TIN_Bytes = int(qos_output_raw.splitlines()[-3].split(" ")[-2])
-        QoS_DEFAULT_Pkts = int(qos_output_raw.splitlines()[-2].split(" ")[-4])
-        QoS_DEFAULT_Bytes = int(qos_output_raw.splitlines()[-2].split(" ")[-2])
-
-
-        results += 'QoS_PLAT_IN_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Pkts))
-        results += 'QoS_PLAT_IN_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_PLAT_Bytes))
-        results += 'QoS_GOLD_IN_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Pkts))
-        results += 'QoS_GOLD_IN_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_GOLD_Bytes))
-        results += 'QoS_SILVER_IN_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Pkts))
-        results += 'QoS_SILVER_IN_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_SILVER_Bytes))
-        results += 'QoS_BRONZE_IN_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Pkts))
-        results += 'QoS_BRONZE_IN_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_BRONZE_Bytes))
-        results += 'QoS_TIN_IN_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Pkts))
-        results += 'QoS_TIN_IN_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_TIN_Bytes))
-        results += 'QoS_DEFAULT_IN_Pkts{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Pkts))
-        results += 'QoS_DEFAULT_IN_Bytes{host="%s"} %s\n' % (seed_hostname, str(QoS_DEFAULT_Bytes))
-
-        crawler_connected.close()
-        crawler_connection_pre.close()
-        return results
-
-    except paramiko.AuthenticationException:
-        logger.warning(seed_hostname + " ########## Auth Error ##########")
-        return results
-    except paramiko.SSHException:
-        logger.warning(seed_hostname + " ########## SSH Error ##########")
-        return results
-    except socket.error:
-        logger.warning(seed_hostname + " ########## Socket Error ##########")
-        return results
-    except Exception as e:
-        logger.warning(seed_hostname + " ########## Unknown Error " + str(e) + "##########")
-        return results
-
-
-def processing_test(hostname, username, password):
-    longstring = str(hostname + username + password + "\n")
-    print("process")
-    print("begin wait")
-    time.sleep(10)
-    print("end wait")
-    print(str(hostname + username + password + "\n"))
-    return longstring
-
-
-def process_hosts_in_parallel():
-    logger.info("----------- Processing Parallel -----------")
-    results = ""
-    hosts = []
-    for each in NAT_Stats_Credentials.hosts:
-        host_details = []
-        host_details.append(each['host'])
-        host_details.append(each['username'])
-        host_details.append(each['password'])
-        host_details.append(each['OS'])
-        hosts.append(host_details)
-    with Pool(processes=args.max_threads) as process_worker:
-        results = process_worker.starmap(login_to_host, hosts)
-    return results
+FLASK_HOST = credentials.FLASK_HOST
+FLASK_PORT = credentials.FLASK_PORT
+LOGFILE = credentials.LOGFILE
+LOGFILE_COUNT = credentials.LOGCOUNT
+LOGFILE_MAX_SIZE = credentials.LOGBYTES
+ABSOLUTE_PATH = credentials.ABSOLUTE_PATH
+HOSTS_DB = {}
+flask_app = Flask('router_nat_stats')
 
 
 def process_hosts_in_serial():
     logger.info("----------- Processing Serial -----------")
     results = ""
-    for host in NAT_Stats_Credentials.hosts:
-        logger.info("----------- Processing Host: %s -----------" % host['host'])
-        # login to box
-        results += login_to_host(host['host'], host['username'], host['password'], host['OS'])
-        logger.info("----------- Finished -----------")
-        # return text to service
+    for host in HOSTS_DB['pingICMPv4'].keys():
+        results += pingipv4(host_dictionary=HOSTS_DB['pingICMPv4'][host])
+    for host in HOSTS_DB['pingICMPv6'].keys():
+        results += pingipv6(host_dictionary=HOSTS_DB['pingICMPv6'][host])
+    for host in HOSTS_DB['curlv4'].keys():
+        results += curlv4(host_dictionary=HOSTS_DB['curlv4'][host])
+    for host in HOSTS_DB['curlv6'].keys():
+        results += curlv6(host_dictionary=HOSTS_DB['curlv6'][host])
     return results
 
 
-def parse_all_arguments():
-    parser = argparse.ArgumentParser(description='process input')
-    parser.add_argument("-d", "--debug", action='store_true', default=False, help="increase output verbosity", )
-    parser.add_argument("-s", "--single_thread", action='store_true', default=False, help="run in single threaded mode")
-    parser.add_argument("-t", "--max_threads", default=10, help="max number of threads to run in parrellel")
-    parser.add_argument("-ACCEPTEULA", "--acceptedeula", action='store_true', default=False,
-                        help="Marking this flag accepts EULA embedded withing the script")
-    args = parser.parse_args()
-    if not args.acceptedeula:
-        print("""you need to accept the EULA agreement which is as follows:-
-    # EULA
-    # This software is provided as is and with zero support level. Support can be purchased by providing Phil bridges 
-    # with a varity of Beer, Wine, Steak and Greggs pasties. Please contact phbridge@cisco.com for support costs and 
-    # arrangements. Until provison of alcohol or baked goodies your on your own but there is no rocket sciecne 
-    # involved so dont panic too much. To accept this EULA you must include the correct flag when running the script. 
-    # If this script goes crazy wrong and breaks everything then your also on your own and Phil will not accept any 
-    # liability of any type or kind. As this script belongs to Phil and NOT Cisco then Cisco cannot be held 
-    # responsable for its use or if it goes bad, nor can Cisco make any profit from this script. Phil can profit 
-    # from this script but will not assume any liability. Other than the boaring stuff please enjoy and plagerise 
-    # as you like (as I have no ways to stop you) but common curtacy says to credit me in some way. 
-    # [see above comments on Beer, Wine, Steak and Greggs.].
+def process_hosts_in_parallel():
+    logger.info("----------- Processing Parallel -----------")
+    results = ""
+    with Pool(processes=150) as pool:
+        array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
+        array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
+        array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
+        array_curlv6 = pool.imap(curlv6, HOSTS_DB['curlv6'].values())
+        # array_DNSv4 = pool.imap(dnspingipv4, HOSTS_DB['DNSpingv4'].values())
+        # array_UDPv4 = pool.imap(udppingipv4, HOSTS_DB['UDPpingv4'].values())
+        # array_TCPv4 = pool.imap(tcppingipv4, HOSTS_DB['TCPpingv4'].values())
+        # array_DNSv6 = pool.imap(dnspingipv4, HOSTS_DB['DNSpingv6'].values())
+        # array_UDPv6 = pool.imap(udppingipv4, HOSTS_DB['UDPpingv6'].values())
+        # array_TCPv6 = pool.imap(tcppingipv4, HOSTS_DB['TCPpingv6'].values())
+        logger.info("----------- Workers all built Parallel -----------")
+        for each in array_pingICMPv4:
+            results += each
+        for each in array_pingICMPv6:
+            results += each
+        for each in array_curlv4:
+            results += each
+        for each in array_curlv6:
+            results += each
+        # for each in array_DNSv4:
+        #     results += each
+        # for each in array_UDPv4:
+        #     results += each
+        # for each in array_TCPv4:
+        #     results += each
+        # for each in array_DNSv6:
+        #     results += each
+        # for each in array_UDPv6:
+        #     results += each
+        # for each in array_TCPv6:
+        #     results += each
+        logger.info("----------- Sending results Parallel -----------")
+    return results
 
-    # To accept the EULA please run with the -ACCEPTEULA flag
-        """)
-        quit()
-    return args
+
+def dnspingipv4(host_dictionary):
+    print(host_dictionary)
+    results = ""
+    results += "NOT YET IMPLEMENTED"
+    return results
 
 
-@web_app.route('/nat_stats')
-# gets called via the http://127.0.0.1:8082/nat_stats
+def udppingipv4(host_dictionary):
+    print(host_dictionary)
+    results = ""
+    results += "NOT YET IMPLEMENTED"
+    return results
+
+
+def tcppingipv4(host_dictionary):
+    print(host_dictionary)
+    results = ""
+    results += "NOT YET IMPLEMENTED"
+    return results
+
+
+def dnspingipv6(host_dictionary):
+    print(host_dictionary)
+    results = ""
+    results += "NOT YET IMPLEMENTED"
+    return results
+
+
+def udppingipv6(host_dictionary):
+    print(host_dictionary)
+    results = ""
+    results += "NOT YET IMPLEMENTED"
+    return results
+
+
+def tcppingipv6(host_dictionary):
+    print(host_dictionary)
+    results = ""
+    results += "NOT YET IMPLEMENTED"
+    return results
+
+
+def pingipv4(host_dictionary):
+    logger.debug(host_dictionary)
+    results = ""
+    hostname = host_dictionary['address']
+    count = int(host_dictionary['count'])
+    timeout = int(host_dictionary['timeout'])
+    tos = host_dictionary['TOS']
+    label = host_dictionary['label']
+    dns = host_dictionary['DNS']
+    group = host_dictionary['group']
+
+    logger.info("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+    address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
+
+    packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
+    drop_pc = 0
+    latency_average = -1
+    latency_total = 0
+    latency_min = -1
+    latency_max = -1
+    success = 0
+    fail = 0
+    for x in range(count):
+        t1 = time.time()
+        ans, unans = sr(packet, verbose=0, timeout=timeout)
+        t2 = time.time()
+        if str(ans).split(":")[4][0] == "1":
+            if not t2 - packet.sent_time > timeout:
+                t = (t2 - packet.sent_time) * 1000
+            else:
+                t = -1
+            if not t == -1:
+                latency_total += t
+                success += 1
+                if t > latency_max:
+                    latency_max = t
+                if latency_min == -1:
+                    latency_min = t
+                elif t < latency_min:
+                    if not t == -1:
+                        latency_min = t
+        elif str(unans).split(":")[4][0] == "1":
+            fail += 1
+    if success > 0:
+        latency_average = latency_total / success
+    if fail > 0:
+        drop_pc += fail * (100 / count)
+    results += 'ICMPv4_LatencyAvg{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_average))))
+    results += 'ICMPv4_LatencyMin{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_min))))
+    results += 'ICMPv4_LatencyMax{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_max))))
+    results += 'ICMPv4_drop{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, drop_pc)
+    return results
+
+
+def pingipv6(host_dictionary):
+    logger.debug(host_dictionary)
+    results = ""
+    hostname = host_dictionary['address']
+    count = int(host_dictionary['count'])
+    timeout = int(host_dictionary['timeout'])
+    tos = host_dictionary['TOS']
+    label = host_dictionary['label']
+    dns = host_dictionary['DNS']
+    group = host_dictionary['group']
+
+    logger.info("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+    address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
+    packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
+    drop_pc = 0
+    latency_average = -1
+    latency_total = 0
+    latency_min = -1
+    latency_max = -1
+    success = 0
+    fail = 0
+    for x in range(count):
+        t1 = time.time()
+        ans, unans = sr(packet, verbose=0, timeout=timeout)
+        t2 = time.time()
+        if str(ans).split(":")[4][0] == "1":
+            if not t2 - packet.sent_time > timeout:
+                t = (t2 - t1)*1000
+            else:
+                t = -1
+            if not t == -1:
+                latency_total += t
+                success += 1
+                if t > latency_max:
+                    latency_max = t
+                if latency_min == -1:
+                    latency_min = t
+                elif t < latency_min:
+                    if not t == -1:
+                        latency_min = t
+        elif str(unans).split(":")[4][0] == "1":
+            fail += 1
+    if success > 0:
+        latency_average = latency_total / success
+    if fail > 0:
+        drop_pc += fail * (100 / count)
+    results += 'ICMPv6_LatencyAvg{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_average))))
+    results += 'ICMPv6_LatencyMin{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_min))))
+    results += 'ICMPv6_LatencyMax{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_max))))
+    results += 'ICMPv6_drop{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, drop_pc)
+    return results
+
+
+def curlv4(host_dictionary):
+    logger.debug(host_dictionary)
+    results = ""
+    url = host_dictionary['address']
+    count = int(host_dictionary['count'])
+    timeout = int(host_dictionary['timeout'])
+    label = host_dictionary['label']
+    dns = host_dictionary['DNS']
+    group = host_dictionary['group']
+
+    curl_lookup_average = -1
+    curl_connect_average = -1
+    curl_app_connect_average = -1
+    curl_pre_transfer_average = -1
+    # curl_start_transfer_average = -1
+    curl_total_transfer_average = -1
+
+    curl_lookup_min = -1
+    curl_connect_min = -1
+    curl_app_connect_min = -1
+    curl_pre_transfer_min = -1
+    # curl_start_transfer_min = -1
+    curl_total_transfer_min = -1
+
+    curl_connect_max = -1
+    curl_lookup_max = -1
+    curl_app_connect_max = -1
+    curl_pre_transfer_max = -1
+    # curl_start_transfer_max = -1
+    curl_total_transfer_max = -1
+
+    success = 0
+    fail = 0
+    drop_pc = 0
+
+    for x in range(count):
+        try:
+            c = pycurl.Curl()
+            c.setopt(c.IPRESOLVE, c.IPRESOLVE_V4)
+            c.setopt(c.TIMEOUT, timeout)
+            c.setopt(c.URL, url)
+            c.setopt(c.NOBODY, 1)
+            c.perform()
+
+            if c.getinfo(c.HTTP_CODE) == 200:
+                success += 1
+                if curl_connect_max < c.getinfo(c.CONNECT_TIME):
+                    curl_connect_max = c.getinfo(c.CONNECT_TIME)
+                if curl_lookup_max < c.getinfo(c.NAMELOOKUP_TIME):
+                    curl_lookup_max = c.getinfo(c.NAMELOOKUP_TIME)
+                if curl_app_connect_max < c.getinfo(c.APPCONNECT_TIME):
+                    curl_app_connect_max = c.getinfo(c.APPCONNECT_TIME)
+                if curl_pre_transfer_max < c.getinfo(c.PRETRANSFER_TIME):
+                    curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
+                # if curl_start_transfer_max < c.getinfo(c.STARTTRANSFER_TIME):
+                #     curl_start_transfer_max = c.getinfo(c.STARTTRANSFER_TIME)
+                if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
+                    curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
+
+                if curl_connect_min > c.getinfo(c.CONNECT_TIME):
+                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
+                if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
+                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+                if curl_app_connect_min < c.getinfo(c.APPCONNECT_TIME):
+                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+                if curl_pre_transfer_min > c.getinfo(c.PRETRANSFER_TIME):
+                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+                # if curl_start_transfer_min > c.getinfo(c.STARTTRANSFER_TIME):
+                #     curl_start_transfer_min = c.getinfo(c.STARTTRANSFER_TIME)
+                if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
+                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+
+                if curl_connect_min == -1:
+                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
+                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+                    # curl_start_transfer_min = c.getinfo(c.STARTTRANSFER_TIME)
+                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+
+                if not curl_connect_average == -1:
+                    curl_connect_average += c.getinfo(c.CONNECT_TIME)
+                    curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
+                    curl_app_connect_average += c.getinfo(c.APPCONNECT_TIME)
+                    curl_pre_transfer_average += c.getinfo(c.PRETRANSFER_TIME)
+                    # curl_start_transfer_average += c.getinfo(c.STARTTRANSFER_TIME)
+                    curl_total_transfer_average += c.getinfo(c.TOTAL_TIME)
+                else:
+                    curl_connect_average = c.getinfo(c.CONNECT_TIME)
+                    curl_lookup_average = c.getinfo(c.NAMELOOKUP_TIME)
+                    curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
+                    curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
+                    # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
+                    curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
+                c.close()
+            else:
+                fail += 1
+
+        except Exception as e:
+            logger.error("curlv4 - Curl'ing to host")
+            logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
+            logger.error("curlv4 - Unexpected error:" + str(e))
+            logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
+            drop_pc += 100 / count
+            c.close()
+
+    if success > 0:
+        curl_connect_average = curl_connect_average / success
+        curl_lookup_average = curl_lookup_average / success
+        curl_pre_transfer_average = curl_pre_transfer_average / success
+        # curl_start_transfer_average = curl_start_transfer_average / success
+        curl_total_transfer_average = curl_total_transfer_average / success
+    if fail > 0:
+        drop_pc += fail * (100 / count)
+
+    results += 'curlv4_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_average)*100)))
+    results += 'curlv4_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_min)*100)))
+    results += 'curlv4_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_max)*100)))
+
+    results += 'curlv4_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_average)*100)))
+    results += 'curlv4_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_min)*100)))
+    results += 'curlv4_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_max)*100)))
+
+    results += 'curlv4_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_average)*100)))
+    results += 'curlv4_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_min)*100)))
+    results += 'curlv4_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_max)*100)))
+
+    # results += 'curlv4_start_transfer_Avg{host="%s"} %s\n' % (url, str("{:.2f}".format(float(curl_start_transfer_average)*100)))
+    # results += 'curlv4_start_transfer_Min{host="%s"} %s\n' % (url, str("{:.2f}".format(float(curl_start_transfer_min)*100)))
+    # results += 'curlv4_start_transfer_Max{host="%s"} %s\n' % (url, str("{:.2f}".format(float(curl_start_transfer_max)*100)))
+
+    results += 'curlv4_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_average)*100)))
+    results += 'curlv4_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_min)*100)))
+    results += 'curlv4_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_max)*100)))
+
+    results += 'curlv4_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
+
+    return results
+
+
+def curlv6(host_dictionary):
+    logger.debug(host_dictionary)
+    results = ""
+    url = host_dictionary['address']
+    count = int(host_dictionary['count'])
+    timeout = int(host_dictionary['timeout'])
+    label = host_dictionary['label']
+    dns = host_dictionary['DNS']
+    group = host_dictionary['group']
+
+    curl_lookup_average = -1
+    curl_connect_average = -1
+    curl_app_connect_average = -1
+    curl_pre_transfer_average = -1
+    # curl_start_transfer_average = -1
+    curl_total_transfer_average = -1
+
+    curl_lookup_min = -1
+    curl_connect_min = -1
+    curl_app_connect_min = -1
+    curl_pre_transfer_min = -1
+    # curl_start_transfer_min = -1
+    curl_total_transfer_min = -1
+
+    curl_connect_max = -1
+    curl_lookup_max = -1
+    curl_app_connect_max = -1
+    curl_pre_transfer_max = -1
+    # curl_start_transfer_max = -1
+    curl_total_transfer_max = -1
+
+    success = 0
+    fail = 0
+    drop_pc = 0
+
+    for x in range(count):
+        print(host_dictionary)
+        try:
+            c = pycurl.Curl()
+            c.setopt(c.IPRESOLVE, c.IPRESOLVE_V6)
+            c.setopt(c.TIMEOUT, timeout)
+            c.setopt(c.URL, url)
+            c.setopt(c.NOBODY, 1)
+            c.perform()
+
+            if c.getinfo(c.HTTP_CODE) == 200:
+                success += 1
+                if curl_connect_max < c.getinfo(c.CONNECT_TIME):
+                    curl_connect_max = c.getinfo(c.CONNECT_TIME)
+                if curl_lookup_max < c.getinfo(c.NAMELOOKUP_TIME):
+                    curl_lookup_max = c.getinfo(c.NAMELOOKUP_TIME)
+                if curl_app_connect_max < c.getinfo(c.APPCONNECT_TIME):
+                    curl_app_connect_max = c.getinfo(c.APPCONNECT_TIME)
+                if curl_pre_transfer_max < c.getinfo(c.PRETRANSFER_TIME):
+                    curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
+                # if curl_start_transfer_max < c.getinfo(c.STARTTRANSFER_TIME):
+                #     curl_start_transfer_max = c.getinfo(c.STARTTRANSFER_TIME)
+                if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
+                    curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
+
+                if curl_connect_min > c.getinfo(c.CONNECT_TIME):
+                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
+                if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
+                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+                if curl_app_connect_min < c.getinfo(c.APPCONNECT_TIME):
+                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+                if curl_pre_transfer_min > c.getinfo(c.PRETRANSFER_TIME):
+                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+                # if curl_start_transfer_min > c.getinfo(c.STARTTRANSFER_TIME):
+                #     curl_start_transfer_min = c.getinfo(c.STARTTRANSFER_TIME)
+                if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
+                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+
+                if curl_connect_min == -1:
+                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
+                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+                    # curl_start_transfer_min = c.getinfo(c.STARTTRANSFER_TIME)
+                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+
+                if not curl_connect_average == -1:
+                    curl_connect_average += c.getinfo(c.CONNECT_TIME)
+                    curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
+                    curl_app_connect_average += c.getinfo(c.APPCONNECT_TIME)
+                    curl_pre_transfer_average += c.getinfo(c.PRETRANSFER_TIME)
+                    # curl_start_transfer_average += c.getinfo(c.STARTTRANSFER_TIME)
+                    curl_total_transfer_average += c.getinfo(c.TOTAL_TIME)
+                else:
+                    curl_connect_average = c.getinfo(c.CONNECT_TIME)
+                    curl_lookup_average = c.getinfo(c.NAMELOOKUP_TIME)
+                    curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
+                    curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
+                    # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
+                    curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
+                c.close()
+            else:
+                fail += 1
+
+        except Exception as e:
+            logger.error("curlv4 - Curl'ing to host")
+            logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
+            logger.error("curlv4 - Unexpected error:" + str(e))
+            logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
+            drop_pc += 100 / count
+            c.close()
+
+    if success > 0:
+        curl_connect_average = curl_connect_average / success
+        curl_lookup_average = curl_lookup_average / success
+        curl_pre_transfer_average = curl_pre_transfer_average / success
+        # curl_start_transfer_average = curl_start_transfer_average / success
+        curl_total_transfer_average = curl_total_transfer_average / success
+    if fail > 0:
+        drop_pc += fail * (100 / count)
+
+    results += 'curlv6_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_average))))
+    results += 'curlv6_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_min))))
+    results += 'curlv6_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_max))))
+
+    results += 'curlv6_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_average))))
+    results += 'curlv6_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_min))))
+    results += 'curlv6_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_max))))
+
+    results += 'curlv6_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_average))))
+    results += 'curlv6_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_min))))
+    results += 'curlv6_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_max))))
+
+    # results += 'curlv6_start_transfer_Avg{host="%s"} %s\n' % (url, str("{:.4f}".format(float(curl_start_transfer_average))))
+    # results += 'curlv6_start_transfer_Min{host="%s"} %s\n' % (url, str("{:.4f}".format(float(curl_start_transfer_min))))
+    # results += 'curlv6_start_transfer_Max{host="%s"} %s\n' % (url, str("{:.4f}".format(float(curl_start_transfer_max))))
+
+    results += 'curlv6_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_average))))
+    results += 'curlv6_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_min))))
+    results += 'curlv6_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_max))))
+
+    results += 'curlv6_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
+
+    return results
+
+
+@flask_app.route('/probe_stats')
 def get_stats():
-    if args.single_thread:
-        results = process_hosts_in_serial()
-    else:
-        results = process_hosts_in_parallel()
+    results = ""
+    # results += process_hosts_in_serial()
+    results += process_hosts_in_parallel()
     return Response(results, mimetype='text/plain')
 
 
+def load_hosts_file_json():
+    try:
+        logger.debug("load_user_statistics_file_json - opening user statistics file")
+        user_filename = ABSOLUTE_PATH + "hosts.json"
+        with open(user_filename) as host_json_file:
+            return_db_json = json.load(host_json_file)
+        logger.debug("load_user_statistics_file_json - closing user statistics file")
+        logger.debug("load_user_statistics_file_json - USERS_JSON =" + str(return_db_json))
+        logger.info("load_user_statistics_file_json - " + "loaded USER JSON DB total EOL Records = " + str(len(return_db_json)))
+        logger.debug("load_user_statistics_file_json - USERS_JSON =" + str(return_db_json.keys()))
+        logger.debug("load_user_statistics_file_json - returning")
+        return return_db_json
+    except Exception as e:
+        logger.error("load_user_statistics_file_json - something went bad opening user statistics file")
+        logger.error("load_user_statistics_file_json - Unexpected error:" + str(sys.exc_info()[0]))
+        logger.error("load_user_statistics_file_json - Unexpected error:" + str(e))
+        logger.error("load_user_statistics_file_json - TRACEBACK=" + str(traceback.format_exc()))
+    return {}
+
+
 if __name__ == '__main__':
-    args = parse_all_arguments()
-    print("grafana_router_nat_stats Service Started")
-    # Enable logging
-    logger = logging.getLogger("grafana_router_nat_stats")
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    handler = logging.handlers.RotatingFileHandler(logfile, maxBytes=logBytes, backupCount=logCount)
+    # Create Logger
+    logger = logging.getLogger("Python Monitor Logger")
+    handler = logging.handlers.RotatingFileHandler(LOGFILE, maxBytes=LOGFILE_MAX_SIZE, backupCount=LOGFILE_COUNT)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
     logger.info("---------------------- STARTING ----------------------")
-    logger.info("grafana_router_nat_stats script started")
-    http_server = wsgiserver.WSGIServer(host=server_IP, port=server_port, wsgi_app=web_app)
+    logger.info("__main__ - " + "Python Monitor Logger")
+
+
+    # GET_CURRENT_DB
+    logger.info("__main__ - " + "GET_CURRENT_DB")
+    HOSTS_DB = load_hosts_file_json()
+
+    # build flask instance.
+    logger.info("__main__ - " + "starting flask")
+    http_server = wsgiserver.WSGIServer(host=FLASK_HOST, port=FLASK_PORT, wsgi_app=flask_app)
     http_server.start()
