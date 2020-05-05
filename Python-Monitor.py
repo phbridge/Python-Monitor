@@ -371,7 +371,7 @@ def curlv4(host_dictionary):
                 fail += 1
         except pycurl.error as e:
             logger.error("curlv4 - catching pycurl.error")
-            logger.error("sending curl url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+            logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("curlv4 - Unexpected error:" + str(e))
             logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
@@ -520,7 +520,7 @@ def curlv6(host_dictionary):
 
         except pycurl.error as e:
             logger.error("curlv4 - catching pycurl.error")
-            logger.error("sending curl url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+            logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("curlv4 - Unexpected error:" + str(e))
             logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
