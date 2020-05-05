@@ -87,7 +87,7 @@ def process_hosts_in_parallel():
     logger.info("----------- Processing Parallel -----------")
     results = ""
     t1 = time.time()
-    with Pool(processes=30) as pool:
+    with Pool(processes=60) as pool:
         array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
         array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
         array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
@@ -108,7 +108,7 @@ def process_hosts_in_parallel():
             results += each
         for each in array_curlv6:
             results += each
-        t3 =time.time()
+        t3 = time.time()
         # for each in array_DNSv4:
         #     results += each
         # for each in array_UDPv4:
@@ -209,7 +209,7 @@ def pingipv4(host_dictionary):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout/2)
+            time.sleep(timeout/4)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
@@ -263,7 +263,7 @@ def pingipv6(host_dictionary):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout/2)
+            time.sleep(timeout/4)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
@@ -373,7 +373,7 @@ def curlv4(host_dictionary):
                     # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
-                time.sleep(timeout/2)
+                time.sleep(timeout/4)
             else:
                 fail += 1
         except pycurl.error as e:
@@ -522,7 +522,7 @@ def curlv6(host_dictionary):
                     # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
-                time.sleep(timeout/2)
+                time.sleep(timeout/4)
             else:
                 fail += 1
 
