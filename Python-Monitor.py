@@ -86,6 +86,7 @@ def process_hosts_in_serial():
 def process_hosts_in_parallel():
     logger.info("----------- Processing Parallel -----------")
     results = ""
+    t1 = time.time()
     with Pool(processes=30) as pool:
         array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
         array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
@@ -97,6 +98,7 @@ def process_hosts_in_parallel():
         # array_DNSv6 = pool.imap(dnspingipv4, HOSTS_DB['DNSpingv6'].values())
         # array_UDPv6 = pool.imap(udppingipv4, HOSTS_DB['UDPpingv6'].values())
         # array_TCPv6 = pool.imap(tcppingipv4, HOSTS_DB['TCPpingv6'].values())
+        t2 = time.time()
         logger.info("----------- Workers all built Parallel -----------")
         for each in array_pingICMPv4:
             results += each
@@ -106,6 +108,7 @@ def process_hosts_in_parallel():
             results += each
         for each in array_curlv6:
             results += each
+        t3 =time.time()
         # for each in array_DNSv4:
         #     results += each
         # for each in array_UDPv4:
@@ -119,6 +122,7 @@ def process_hosts_in_parallel():
         # for each in array_TCPv6:
         #     results += each
         logger.info("----------- Sending results Parallel -----------")
+        logger.info("t1 - t2=" + str(t1-t2) + " t2 - t3=" + str(t2-t3) + " t1 - t3= " + str(t1-t3))
     return results
 
 
@@ -205,6 +209,7 @@ def pingipv4(host_dictionary):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
+            time.sleep(timeout/2)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
@@ -258,6 +263,7 @@ def pingipv6(host_dictionary):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
+            time.sleep(timeout/2)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
@@ -367,6 +373,7 @@ def curlv4(host_dictionary):
                     # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
+                time.sleep(timeout/2)
             else:
                 fail += 1
         except pycurl.error as e:
@@ -375,14 +382,14 @@ def curlv4(host_dictionary):
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("curlv4 - Unexpected error:" + str(e))
             logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
-            drop_pc += 100 / count
+            fail += 1
             c.close()
         except Exception as e:
             logger.error("curlv4 - Curl'ing to host")
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("curlv4 - Unexpected error:" + str(e))
             logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
-            drop_pc += 100 / count
+            fail += 1
             c.close()
 
     if success > 0:
@@ -515,6 +522,7 @@ def curlv6(host_dictionary):
                     # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
+                time.sleep(timeout/2)
             else:
                 fail += 1
 
@@ -524,14 +532,14 @@ def curlv6(host_dictionary):
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("curlv4 - Unexpected error:" + str(e))
             logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
-            drop_pc += 100 / count
+            fail += 1
             c.close()
         except Exception as e:
             logger.error("curlv4 - Curl'ing to host")
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("curlv4 - Unexpected error:" + str(e))
             logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
-            drop_pc += 100 / count
+            fail += 1
             c.close()
 
     if success > 0:
