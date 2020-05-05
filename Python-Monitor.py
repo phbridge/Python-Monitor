@@ -175,7 +175,7 @@ def pingipv4(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
-    logger.info("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+    logger.debug("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
     address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
 
     packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
@@ -229,7 +229,7 @@ def pingipv6(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
-    logger.info("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+    logger.debug("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
     address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
     packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
     drop_pc = 0
@@ -281,6 +281,7 @@ def curlv4(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
+    logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
     curl_lookup_average = -1
     curl_connect_average = -1
     curl_app_connect_average = -1
@@ -368,7 +369,14 @@ def curlv4(host_dictionary):
                 c.close()
             else:
                 fail += 1
-
+        except pycurl.error as e:
+            logger.error("curlv4 - catching pycurl.error")
+            logger.error("sending curl url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+            logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
+            logger.error("curlv4 - Unexpected error:" + str(e))
+            logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
+            drop_pc += 100 / count
+            c.close()
         except Exception as e:
             logger.error("curlv4 - Curl'ing to host")
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
@@ -421,6 +429,7 @@ def curlv6(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
+    logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
     curl_lookup_average = -1
     curl_connect_average = -1
     curl_app_connect_average = -1
@@ -447,7 +456,6 @@ def curlv6(host_dictionary):
     drop_pc = 0
 
     for x in range(count):
-        print(host_dictionary)
         try:
             c = pycurl.Curl()
             c.setopt(c.IPRESOLVE, c.IPRESOLVE_V6)
@@ -510,6 +518,14 @@ def curlv6(host_dictionary):
             else:
                 fail += 1
 
+        except pycurl.error as e:
+            logger.error("curlv4 - catching pycurl.error")
+            logger.error("sending curl url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+            logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
+            logger.error("curlv4 - Unexpected error:" + str(e))
+            logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
+            drop_pc += 100 / count
+            c.close()
         except Exception as e:
             logger.error("curlv4 - Curl'ing to host")
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
