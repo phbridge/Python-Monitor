@@ -58,7 +58,9 @@ import sys
 import json
 from scapy.all import Ether, IP, IPv6, ICMP, ICMPv6EchoRequest, sr, conf
 import pycurl
+import threading
 import random
+import datetime
 
 FLASK_HOST = credentials.FLASK_HOST
 FLASK_PORT = credentials.FLASK_PORT
@@ -124,7 +126,7 @@ def process_hosts_in_parallel():
         # for each in array_TCPv6:
         #     results += each
         logger.info("----------- Sending results Parallel -----------")
-        logger.info("t1 - t2=" + str(t1-t2) + " t2 - t3=" + str(t2-t3) + " t1 - t3= " + str(t1-t3))
+        logger.info("t2 - t1=" + str("{:.2f}".format(float(t2-t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3-t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3-t1))))
     return results
 
 
@@ -256,6 +258,8 @@ def pingipv6(host_dictionary):
         t1 = time.time()
         ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE)
         t2 = time.time()
+        logger.info(ans)
+        logger.info(unans)
         if str(ans).split(":")[4][0] == "1":
             if not t2 - packet.sent_time > timeout:
                 t = (t2 - t1)*1000
@@ -650,6 +654,106 @@ def load_hosts_file_json():
     return {}
 
 
+def auto_update_curlv6_probe_stats():
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+    future += datetime.timedelta(seconds=30)
+    time.sleep((future - t).seconds)
+    try:
+        results = ""
+        t1 = time.time()
+        with Pool(processes=32) as pool:
+            array_curlv6 = pool.imap(curlv6, HOSTS_DB['curlv6'].values())
+            t2 = time.time()
+            for each in array_curlv6:
+                results += each
+            t3 = time.time()
+            logger.info("auto_update_curlv6_probe_stats - t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
+    except Exception as e:
+        logger.error("auto_update_curlv6_probe_stats - something went bad with auto update")
+        logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
+        logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(e))
+        logger.error("auto_update_curlv6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+
+        
+def auto_update_curlv4_probe_stats():
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+    future += datetime.timedelta(seconds=30)
+    time.sleep((future - t).seconds)
+    try:
+        results = ""
+        t1 = time.time()
+        with Pool(processes=32) as pool:
+            array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
+            t2 = time.time()
+            for each in array_curlv4:
+                results += each
+            t3 = time.time()
+            logger.info("auto_update_curlv4_probe_stats - t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
+    except Exception as e:
+        logger.error("auto_update_curlv4_probe_stats - something went bad with auto update")
+        logger.error("auto_update_curlv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
+        logger.error("auto_update_curlv4_probe_stats - Unexpected error:" + str(e))
+        logger.error("auto_update_curlv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+
+
+def auto_update_pingipv6_probe_stats():
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+    future += datetime.timedelta(seconds=30)
+    time.sleep((future - t).seconds)
+    try:
+        results = ""
+        t1 = time.time()
+        with Pool(processes=32) as pool:
+            array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
+            t2 = time.time()
+            for each in array_pingICMPv6:
+                results += each
+            t3 = time.time()
+            logger.info("auto_update_pingipv6_probe_stats - t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
+    except Exception as e:
+        logger.error("auto_update_pingipv6_probe_stats - something went bad with auto update")
+        logger.error("auto_update_pingipv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
+        logger.error("auto_update_pingipv6_probe_stats - Unexpected error:" + str(e))
+        logger.error("auto_update_pingipv6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+
+
+def auto_update_pingipv4_probe_stats():
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+    future += datetime.timedelta(seconds=30)
+    time.sleep((future - t).seconds)
+    try:
+        results = ""
+        t1 = time.time()
+        with Pool(processes=32) as pool:
+            array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
+            t2 = time.time()
+            for each in array_pingICMPv4:
+                results += each
+            t3 = time.time()
+            logger.info("auto_update_pingipv4_probe_stats - t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
+    except Exception as e:
+        logger.error("auto_update_pingipv4_probe_stats - something went bad with auto update")
+        logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
+        logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(e))
+        logger.error("auto_update_pingipv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+
+
 if __name__ == '__main__':
     # Create Logger
     logger = logging.getLogger("Python Monitor Logger")
@@ -661,6 +765,15 @@ if __name__ == '__main__':
     logger.info("---------------------- STARTING ----------------------")
     logger.info("__main__ - " + "Python Monitor Logger")
 
+    # thread per process
+    thread_pingipv4 = threading.Thread(target=lambda: auto_update_pingipv4_probe_stats())
+    thread_pingipv4.start()
+    thread_pingipv6 = threading.Thread(target=lambda: auto_update_pingipv6_probe_stats())
+    thread_pingipv6.start()
+    thread_curlipv4 = threading.Thread(target=lambda: auto_update_curlv4_probe_stats())
+    thread_curlipv4.start()
+    thread_curlipv6 = threading.Thread(target=lambda: auto_update_curlv6_probe_stats())
+    thread_curlipv6.start()
 
     # GET_CURRENT_DB
     logger.info("__main__ - " + "GET_CURRENT_DB")
