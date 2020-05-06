@@ -609,7 +609,7 @@ def pingipv6_probe_stats():
 
 
 @flask_app.route('/curl_v4_probe_stats')
-def get_stats():
+def curlv4_get_stats():
     logger.info("----------- Processing Serial -----------")
     results = ""
     for host in HOSTS_DB['curlv4'].keys():
@@ -618,7 +618,7 @@ def get_stats():
 
 
 @flask_app.route('/curl_v6probe_stats')
-def get_stats():
+def curlv6_get_stats():
     logger.info("----------- Processing Serial -----------")
     results = ""
     for host in HOSTS_DB['curlv6'].keys():
