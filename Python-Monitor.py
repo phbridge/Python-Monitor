@@ -58,6 +58,7 @@ import sys
 import json
 from scapy.all import Ether, IP, IPv6, ICMP, ICMPv6EchoRequest, sr
 import pycurl
+import random
 
 FLASK_HOST = credentials.FLASK_HOST
 FLASK_PORT = credentials.FLASK_PORT
@@ -80,6 +81,49 @@ def process_hosts_in_serial():
         results += curlv4(host_dictionary=HOSTS_DB['curlv4'][host])
     for host in HOSTS_DB['curlv6'].keys():
         results += curlv6(host_dictionary=HOSTS_DB['curlv6'][host])
+    return results
+
+
+def process_proces_hosts_in_parallel():
+    logger.info("----------- Processing Parallellllllll -----------")
+    results = ""
+    t1 = time.time()
+    with Pool(processes=32) as pool:
+        array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
+        array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
+        array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
+        array_curlv6 = pool.imap(curlv6, HOSTS_DB['curlv6'].values())
+        # array_DNSv4 = pool.imap(dnspingipv4, HOSTS_DB['DNSpingv4'].values())
+        # array_UDPv4 = pool.imap(udppingipv4, HOSTS_DB['UDPpingv4'].values())
+        # array_TCPv4 = pool.imap(tcppingipv4, HOSTS_DB['TCPpingv4'].values())
+        # array_DNSv6 = pool.imap(dnspingipv4, HOSTS_DB['DNSpingv6'].values())
+        # array_UDPv6 = pool.imap(udppingipv4, HOSTS_DB['UDPpingv6'].values())
+        # array_TCPv6 = pool.imap(tcppingipv4, HOSTS_DB['TCPpingv6'].values())
+        t2 = time.time()
+        logger.info("----------- Workers all built Parallellllllll -----------")
+        for each in array_pingICMPv4:
+            results += each
+        for each in array_pingICMPv6:
+            results += each
+        for each in array_curlv4:
+            results += each
+        for each in array_curlv6:
+            results += each
+        t3 = time.time()
+        # for each in array_DNSv4:
+        #     results += each
+        # for each in array_UDPv4:
+        #     results += each
+        # for each in array_TCPv4:
+        #     results += each
+        # for each in array_DNSv6:
+        #     results += each
+        # for each in array_UDPv6:
+        #     results += each
+        # for each in array_TCPv6:
+        #     results += each
+        logger.info("----------- Sending results Parallellllllll -----------")
+        logger.info("t1 - t2=" + str(t1 - t2) + " t2 - t3=" + str(t2 - t3) + " t1 - t3= " + str(t1 - t3))
     return results
 
 
@@ -179,6 +223,7 @@ def pingipv4(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
+    time.sleep(random.uniform(0, 1) / timeout)
     logger.debug("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
     address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
 
@@ -234,6 +279,7 @@ def pingipv6(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
+    time.sleep(random.uniform(0, 1) / timeout)
     logger.debug("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
     address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
     packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
@@ -287,6 +333,7 @@ def curlv4(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
+    time.sleep(random.uniform(0, 1) / timeout)
     logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
     curl_lookup_average = -1
     curl_connect_average = -1
@@ -436,6 +483,7 @@ def curlv6(host_dictionary):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
 
+    time.sleep(random.uniform(0, 1) / timeout)
     logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
     curl_lookup_average = -1
     curl_connect_average = -1
