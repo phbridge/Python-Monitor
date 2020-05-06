@@ -655,11 +655,11 @@ def load_hosts_file_json():
 
 
 def auto_update_curlv6_probe_stats():
-    t = datetime.datetime.today()
+    t = datetime.datetime.now()
     if t.second < 29:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
     elif t.second > 30:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
     future += datetime.timedelta(seconds=30)
     time.sleep((future - t).seconds)
     try:
@@ -680,11 +680,11 @@ def auto_update_curlv6_probe_stats():
 
 
 def auto_update_curlv4_probe_stats():
-    t = datetime.datetime.today()
+    t = datetime.datetime.now()
     if t.second < 29:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
     elif t.second > 30:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
     future += datetime.timedelta(seconds=30)
     time.sleep((future - t).seconds)
     try:
@@ -705,13 +705,14 @@ def auto_update_curlv4_probe_stats():
 
 
 def auto_update_pingipv6_probe_stats():
-    t = datetime.datetime.today()
+    t = datetime.datetime.now()
     if t.second < 29:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
     elif t.second > 30:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
     future += datetime.timedelta(seconds=30)
     time.sleep((future - t).seconds)
+
     try:
         results = ""
         t1 = time.time()
@@ -730,11 +731,11 @@ def auto_update_pingipv6_probe_stats():
 
 
 def auto_update_pingipv4_probe_stats():
-    t = datetime.datetime.today()
+    t = datetime.datetime.now()
     if t.second < 29:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
     elif t.second > 30:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 0)
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
     future += datetime.timedelta(seconds=30)
     time.sleep((future - t).seconds)
     try:
