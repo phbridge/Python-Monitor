@@ -655,7 +655,7 @@ def load_hosts_file_json():
 
 
 def auto_update_curlv6_probe_stats():
-    t = datetime.datetime.now()
+    t = datetime.datetime.today()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
     elif t.second > 30:
@@ -678,9 +678,9 @@ def auto_update_curlv6_probe_stats():
         logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(e))
         logger.error("auto_update_curlv6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
 
-        
+
 def auto_update_curlv4_probe_stats():
-    t = datetime.datetime.now()
+    t = datetime.datetime.today()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
     elif t.second > 30:
@@ -705,7 +705,7 @@ def auto_update_curlv4_probe_stats():
 
 
 def auto_update_pingipv6_probe_stats():
-    t = datetime.datetime.now()
+    t = datetime.datetime.today()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
     elif t.second > 30:
@@ -730,7 +730,7 @@ def auto_update_pingipv6_probe_stats():
 
 
 def auto_update_pingipv4_probe_stats():
-    t = datetime.datetime.now()
+    t = datetime.datetime.today()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.min, 30)
     elif t.second > 30:
