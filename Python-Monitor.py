@@ -66,6 +66,7 @@ LOGFILE = credentials.LOGFILE
 LOGFILE_COUNT = credentials.LOGCOUNT
 LOGFILE_MAX_SIZE = credentials.LOGBYTES
 ABSOLUTE_PATH = credentials.ABSOLUTE_PATH
+INTERFACE = credentials.INTERFACE
 HOSTS_DB = {}
 flask_app = Flask('router_nat_stats')
 
@@ -84,54 +85,11 @@ def process_hosts_in_serial():
     return results
 
 
-def process_proces_hosts_in_parallel():
-    logger.info("----------- Processing Parallellllllll -----------")
-    results = ""
-    t1 = time.time()
-    with Pool(processes=32) as pool:
-        array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
-        array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
-        array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
-        array_curlv6 = pool.imap(curlv6, HOSTS_DB['curlv6'].values())
-        # array_DNSv4 = pool.imap(dnspingipv4, HOSTS_DB['DNSpingv4'].values())
-        # array_UDPv4 = pool.imap(udppingipv4, HOSTS_DB['UDPpingv4'].values())
-        # array_TCPv4 = pool.imap(tcppingipv4, HOSTS_DB['TCPpingv4'].values())
-        # array_DNSv6 = pool.imap(dnspingipv4, HOSTS_DB['DNSpingv6'].values())
-        # array_UDPv6 = pool.imap(udppingipv4, HOSTS_DB['UDPpingv6'].values())
-        # array_TCPv6 = pool.imap(tcppingipv4, HOSTS_DB['TCPpingv6'].values())
-        t2 = time.time()
-        logger.info("----------- Workers all built Parallellllllll -----------")
-        for each in array_pingICMPv4:
-            results += each
-        for each in array_pingICMPv6:
-            results += each
-        for each in array_curlv4:
-            results += each
-        for each in array_curlv6:
-            results += each
-        t3 = time.time()
-        # for each in array_DNSv4:
-        #     results += each
-        # for each in array_UDPv4:
-        #     results += each
-        # for each in array_TCPv4:
-        #     results += each
-        # for each in array_DNSv6:
-        #     results += each
-        # for each in array_UDPv6:
-        #     results += each
-        # for each in array_TCPv6:
-        #     results += each
-        logger.info("----------- Sending results Parallellllllll -----------")
-        logger.info("t1 - t2=" + str(t1 - t2) + " t2 - t3=" + str(t2 - t3) + " t1 - t3= " + str(t1 - t3))
-    return results
-
-
 def process_hosts_in_parallel():
     logger.info("----------- Processing Parallel -----------")
     results = ""
     t1 = time.time()
-    with Pool(processes=60) as pool:
+    with Pool(processes=32) as pool:
         array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
         array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
         array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
@@ -237,7 +195,7 @@ def pingipv4(host_dictionary):
     fail = 0
     for x in range(count):
         t1 = time.time()
-        ans, unans = sr(packet, verbose=0, timeout=timeout)
+        ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE)
         t2 = time.time()
         if str(ans).split(":")[4][0] == "1":
             if not t2 - packet.sent_time > timeout:
@@ -292,7 +250,7 @@ def pingipv6(host_dictionary):
     fail = 0
     for x in range(count):
         t1 = time.time()
-        ans, unans = sr(packet, verbose=0, timeout=timeout)
+        ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE)
         t2 = time.time()
         if str(ans).split(":")[4][0] == "1":
             if not t2 - packet.sent_time > timeout:
@@ -629,6 +587,42 @@ def get_stats():
     results = ""
     # results += process_hosts_in_serial()
     results += process_hosts_in_parallel()
+    return Response(results, mimetype='text/plain')
+
+
+@flask_app.route('/pingipv4_probe_stats')
+def pingipv4_probe_stats():
+    logger.info("----------- Processing Serial -----------")
+    results = ""
+    for host in HOSTS_DB['pingICMPv4'].keys():
+        results += pingipv4(host_dictionary=HOSTS_DB['pingICMPv4'][host])
+    return Response(results, mimetype='text/plain')
+
+
+@flask_app.route('/pingipv6_probe_stats')
+def pingipv6_probe_stats():
+    logger.info("----------- Processing Serial -----------")
+    results = ""
+    for host in HOSTS_DB['pingICMPv6'].keys():
+        results += pingipv6(host_dictionary=HOSTS_DB['pingICMPv6'][host])
+    return Response(results, mimetype='text/plain')
+
+
+@flask_app.route('/curl_v4_probe_stats')
+def get_stats():
+    logger.info("----------- Processing Serial -----------")
+    results = ""
+    for host in HOSTS_DB['curlv4'].keys():
+        results += curlv4(host_dictionary=HOSTS_DB['curlv4'][host])
+    return Response(results, mimetype='text/plain')
+
+
+@flask_app.route('/curl_v6probe_stats')
+def get_stats():
+    logger.info("----------- Processing Serial -----------")
+    results = ""
+    for host in HOSTS_DB['curlv6'].keys():
+        results += curlv6(host_dictionary=HOSTS_DB['curlv6'][host])
     return Response(results, mimetype='text/plain')
 
 
