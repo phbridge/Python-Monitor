@@ -256,7 +256,7 @@ def pingipv6(host_dictionary):
     fail = 0
     for x in range(count):
         t1 = time.time()
-        ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE)
+        ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE, nofilter=True)
         t2 = time.time()
         logger.info(ans)
         logger.info(unans)
