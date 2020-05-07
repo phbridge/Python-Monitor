@@ -245,7 +245,7 @@ def pingipv6(host_dictionary):
     address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
     packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
     # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263
-    # conf.raw_layer = IPv6
+    conf.raw_layer = IPv6
     # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263
     drop_pc = 0
     latency_average = -1
@@ -256,7 +256,7 @@ def pingipv6(host_dictionary):
     fail = 0
     for x in range(count):
         t1 = time.time()
-        ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE, nofilter=True)
+        ans, unans = sr(packet, verbose=1, timeout=timeout, iface=INTERFACE, nofilter=True)
         t2 = time.time()
         logger.info(ans)
         logger.info(unans)
