@@ -244,9 +244,6 @@ def pingipv6(host_dictionary):
     logger.debug("sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
     address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
     packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
-    # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263
-    conf.raw_layer = IPv6
-    # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263
     drop_pc = 0
     latency_average = -1
     latency_total = 0
@@ -256,10 +253,10 @@ def pingipv6(host_dictionary):
     fail = 0
     for x in range(count):
         t1 = time.time()
-        ans, unans = sr(packet, verbose=1, timeout=timeout, iface=INTERFACE, nofilter=True)
+        ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE)
         t2 = time.time()
-        logger.info(ans)
-        logger.info(unans)
+        # print(ans)
+        # print(unans)
         if str(ans).split(":")[4][0] == "1":
             if not t2 - packet.sent_time > timeout:
                 t = (t2 - t1)*1000
@@ -276,6 +273,39 @@ def pingipv6(host_dictionary):
                     if not t == -1:
                         latency_min = t
             time.sleep(timeout/4)
+        # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263 as I couldnt get
+        # conf.raw_layer = IPv6 or no filter to work
+        elif str(ans).split(":")[5][0] == "1" and str(ans[0]).split(" ")[16].split("=")[1] == str(address_from_hostname) and str(ans[0]).split(" ")[18] == "|<ICMPv6EchoReply":
+            if not t2 - packet.sent_time > timeout:
+                t = (t2 - t1)*1000
+            else:
+                t = -1
+            if not t == -1:
+                latency_total += t
+                success += 1
+                if t > latency_max:
+                    latency_max = t
+                if latency_min == -1:
+                    latency_min = t
+                elif t < latency_min:
+                    if not t == -1:
+                        latency_min = t
+            time.sleep(timeout/4)
+            # print("#######0#####")
+            # print(ans[0])
+            # print("#####1#######")
+            # print(str(ans[0]).split(" ")[16].split("=")[1])
+            # print("######2######")
+            # if str(ans[0]).split(" ")[18] == "|<ICMPv6EchoReply":
+            #     print("True")
+            # print("######3######")
+            # print(address_from_hostname)
+            # if str(ans[0]).split(" ")[16].split("=")[1] == str(address_from_hostname):
+            #     print("True")
+            # print("######4######")
+            # print(str(ans[0]).split(" ")[21])
+            # print("######5######")
+
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
