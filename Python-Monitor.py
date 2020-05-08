@@ -693,7 +693,7 @@ def auto_update_curlv6_probe_stats():
         try:
             results = ""
             t1 = time.time()
-            with Pool(processes=32) as pool:
+            with Pool(processes=8) as pool:
                 array_curlv6 = pool.imap(curlv6, HOSTS_DB['curlv6'].values())
                 t2 = time.time()
                 for each in array_curlv6:
@@ -726,7 +726,7 @@ def auto_update_curlv4_probe_stats():
         try:
             results = ""
             t1 = time.time()
-            with Pool(processes=32) as pool:
+            with Pool(processes=8) as pool:
                 array_curlv4 = pool.imap(curlv4, HOSTS_DB['curlv4'].values())
                 t2 = time.time()
                 for each in array_curlv4:
@@ -759,7 +759,7 @@ def auto_update_pingipv6_probe_stats():
         try:
             results = ""
             t1 = time.time()
-            with Pool(processes=32) as pool:
+            with Pool(processes=8) as pool:
                 array_pingICMPv6 = pool.imap(pingipv6, HOSTS_DB['pingICMPv6'].values())
                 t2 = time.time()
                 for each in array_pingICMPv6:
@@ -792,7 +792,7 @@ def auto_update_pingipv4_probe_stats():
         try:
             results = ""
             t1 = time.time()
-            with Pool(processes=32) as pool:
+            with Pool(processes=8) as pool:
                 array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
                 t2 = time.time()
                 for each in array_pingICMPv4:
