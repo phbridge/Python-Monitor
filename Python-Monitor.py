@@ -699,7 +699,14 @@ def auto_update_curlv6_probe_stats():
                 for each in array_curlv6:
                     results += each
                 t3 = time.time()
-                logger.info("auto_update_curlv6_probe_stats - t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
+                update_influx(results, future)
+                t4 = time.time()
+                logger.info("auto_update_pingipv4_probe_stats -" +
+                            " t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) +
+                            " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) +
+                            " t4 - t3= " + str("{:.2f}".format(float(t4 - t3))) +
+                            " t4 - t1= " + str("{:.2f}".format(float(t4 - t1))) +
+                            " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
         except Exception as e:
             logger.error("auto_update_curlv6_probe_stats - something went bad with auto update")
             logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
@@ -725,7 +732,14 @@ def auto_update_curlv4_probe_stats():
                 for each in array_curlv4:
                     results += each
                 t3 = time.time()
-                logger.info("auto_update_curlv4_probe_stats - t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
+                update_influx(results, future)
+                t4 = time.time()
+                logger.info("auto_update_pingipv4_probe_stats -" +
+                            " t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) +
+                            " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) +
+                            " t4 - t3= " + str("{:.2f}".format(float(t4 - t3))) +
+                            " t4 - t1= " + str("{:.2f}".format(float(t4 - t1))) +
+                            " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
         except Exception as e:
             logger.error("auto_update_curlv4_probe_stats - something went bad with auto update")
             logger.error("auto_update_curlv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
@@ -751,7 +765,14 @@ def auto_update_pingipv6_probe_stats():
                 for each in array_pingICMPv6:
                     results += each
                 t3 = time.time()
-                logger.info("auto_update_pingipv6_probe_stats - t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) + " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) + " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
+                update_influx(results, future)
+                t4 = time.time()
+                logger.info("auto_update_pingipv4_probe_stats -" +
+                            " t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) +
+                            " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) +
+                            " t4 - t3= " + str("{:.2f}".format(float(t4 - t3))) +
+                            " t4 - t1= " + str("{:.2f}".format(float(t4 - t1))) +
+                            " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
         except Exception as e:
             logger.error("auto_update_pingipv6_probe_stats - something went bad with auto update")
             logger.error("auto_update_pingipv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
