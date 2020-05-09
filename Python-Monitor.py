@@ -701,7 +701,7 @@ def auto_update_curlv6_probe_stats():
                 t3 = time.time()
                 update_influx(results, future)
                 t4 = time.time()
-                logger.info("auto_update_pingipv4_probe_stats -" +
+                logger.info("auto_update_curlv6_probe_stats -" +
                             " t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) +
                             " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) +
                             " t4 - t3= " + str("{:.2f}".format(float(t4 - t3))) +
@@ -734,7 +734,7 @@ def auto_update_curlv4_probe_stats():
                 t3 = time.time()
                 update_influx(results, future)
                 t4 = time.time()
-                logger.info("auto_update_pingipv4_probe_stats -" +
+                logger.info("auto_update_curlv4_probe_stats -" +
                             " t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) +
                             " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) +
                             " t4 - t3= " + str("{:.2f}".format(float(t4 - t3))) +
@@ -767,7 +767,7 @@ def auto_update_pingipv6_probe_stats():
                 t3 = time.time()
                 update_influx(results, future)
                 t4 = time.time()
-                logger.info("auto_update_pingipv4_probe_stats -" +
+                logger.info("auto_update_pingipv6_probe_stats -" +
                             " t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) +
                             " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) +
                             " t4 - t3= " + str("{:.2f}".format(float(t4 - t3))) +
