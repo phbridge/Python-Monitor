@@ -853,7 +853,7 @@ def update_influx(raw_string, timestamp):
         for each in raw_string.splitlines():
             string_to_upload += each + " " + timestamp_string + "\n"
         upload_to_influx_sessions = requests.session()
-        # upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload)
+        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload)
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
         logger.info("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
         logger.info("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
