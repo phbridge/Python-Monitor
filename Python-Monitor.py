@@ -683,6 +683,12 @@ def load_hosts_file_json():
 
 def auto_update_curlv6_probe_stats():
     while True:
+        t = datetime.datetime.now()
+        if t.second < 29:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+        elif t.second > 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+        future += datetime.timedelta(seconds=30)
         try:
             results = ""
             t1 = time.time()
@@ -705,17 +711,17 @@ def auto_update_curlv6_probe_stats():
             logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_curlv6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        time.sleep((future - datetime.datetime.now()).seconds)
+
+
+def auto_update_curlv4_probe_stats():
+    while True:
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         elif t.second > 30:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
         future += datetime.timedelta(seconds=30)
-        time.sleep((future - t).seconds)
-
-
-def auto_update_curlv4_probe_stats():
-    while True:
         try:
             results = ""
             t1 = time.time()
@@ -738,17 +744,17 @@ def auto_update_curlv4_probe_stats():
             logger.error("auto_update_curlv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_curlv4_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_curlv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        time.sleep((future - datetime.datetime.now()).seconds)
+
+
+def auto_update_pingipv6_probe_stats():
+    while True:
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         elif t.second > 30:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
         future += datetime.timedelta(seconds=30)
-        time.sleep((future - t).seconds)
-
-
-def auto_update_pingipv6_probe_stats():
-    while True:
         try:
             results = ""
             t1 = time.time()
@@ -771,17 +777,17 @@ def auto_update_pingipv6_probe_stats():
             logger.error("auto_update_pingipv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_pingipv6_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_pingipv6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        time.sleep((future - datetime.datetime.now()).seconds)
+
+
+def auto_update_pingipv4_probe_stats():
+    while True:
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         elif t.second > 30:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
         future += datetime.timedelta(seconds=30)
-        time.sleep((future - t).seconds)
-
-
-def auto_update_pingipv4_probe_stats():
-    while True:
         try:
             results = ""
             t1 = time.time()
@@ -804,14 +810,7 @@ def auto_update_pingipv4_probe_stats():
             logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_pingipv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
-        t = datetime.datetime.now()
-        if t.second < 29:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        elif t.second > 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-        future += datetime.timedelta(seconds=30)
-        time.sleep((future - t).seconds)
-
+        time.sleep((future - datetime.datetime.now()).seconds)
 
 
 def update_influx(raw_string, timestamp):
