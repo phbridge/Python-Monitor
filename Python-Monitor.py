@@ -217,7 +217,7 @@ def pingipv4(host_dictionary, influx_results=True):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout/4)
+            time.sleep(timeout/8)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
@@ -278,7 +278,7 @@ def pingipv6(host_dictionary, influx_results=True):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout/4)
+            time.sleep(timeout/8)
         # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263 as I couldnt get
         # conf.raw_layer = IPv6 or no filter to work
         elif str(ans).split(":")[5][0] == "1" and str(ans[0]).split(" ")[16].split("=")[1] == str(address_from_hostname) and str(ans[0]).split(" ")[18] == "|<ICMPv6EchoReply":
@@ -296,7 +296,7 @@ def pingipv6(host_dictionary, influx_results=True):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout/4)
+            time.sleep(timeout/8)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
@@ -414,7 +414,7 @@ def curlv4(host_dictionary, influx_results=True):
                     # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
-                time.sleep(timeout/4)
+                time.sleep(timeout/8)
             else:
                 fail += 1
         except pycurl.error as e:
@@ -559,7 +559,7 @@ def curlv6(host_dictionary, influx_results=True):
                     curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
-                time.sleep(timeout/4)
+                time.sleep(timeout/8)
             else:
                 fail += 1
 
