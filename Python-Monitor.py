@@ -835,10 +835,10 @@ def update_influx(raw_string, timestamp):
 if __name__ == '__main__':
     # Create Logger
     logger = logging.getLogger("Python Monitor Logger")
-    handler = logging.handlers.RotatingFileHandler(LOGFILE, maxBytes=LOGFILE_MAX_SIZE, backupCount=LOGFILE_COUNT)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    logger_handler = logging.handlers.RotatingFileHandler(LOGFILE, maxBytes=LOGFILE_MAX_SIZE, backupCount=365, when='D')
+    logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    logger_handler.setFormatter(logger_formatter)
+    logger.addHandler(logger_handler)
     logger.setLevel(logging.INFO)
     logger.info("---------------------- STARTING ----------------------")
     logger.info("__main__ - " + "Python Monitor Logger")
