@@ -682,13 +682,14 @@ def load_hosts_file_json():
 
 
 def auto_update_curlv6_probe_stats():
-    while True:
-        t = datetime.datetime.now()
-        if t.second < 29:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        elif t.second > 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+        future += datetime.timedelta(seconds=30)
+    while True:
         try:
             results = ""
             t1 = time.time()
@@ -711,17 +712,25 @@ def auto_update_curlv6_probe_stats():
             logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_curlv6_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_curlv6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        t = datetime.datetime.now()
+        if t.second < 29:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+            future += datetime.timedelta(seconds=30)
+        elif t.second > 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+            future += datetime.timedelta(seconds=30)
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
 def auto_update_curlv4_probe_stats():
-    while True:
-        t = datetime.datetime.now()
-        if t.second < 29:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        elif t.second > 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+        future += datetime.timedelta(seconds=30)
+    while True:
         try:
             results = ""
             t1 = time.time()
@@ -744,17 +753,25 @@ def auto_update_curlv4_probe_stats():
             logger.error("auto_update_curlv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_curlv4_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_curlv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        t = datetime.datetime.now()
+        if t.second < 29:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+            future += datetime.timedelta(seconds=30)
+        elif t.second > 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+            future += datetime.timedelta(seconds=30)
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
 def auto_update_pingipv6_probe_stats():
-    while True:
-        t = datetime.datetime.now()
-        if t.second < 29:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        elif t.second > 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+        future += datetime.timedelta(seconds=30)
+    while True:
         try:
             results = ""
             t1 = time.time()
@@ -777,17 +794,25 @@ def auto_update_pingipv6_probe_stats():
             logger.error("auto_update_pingipv6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_pingipv6_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_pingipv6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        t = datetime.datetime.now()
+        if t.second < 29:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+            future += datetime.timedelta(seconds=30)
+        elif t.second > 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+            future += datetime.timedelta(seconds=30)
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
 def auto_update_pingipv4_probe_stats():
-    while True:
-        t = datetime.datetime.now()
-        if t.second < 29:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        elif t.second > 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+        future += datetime.timedelta(seconds=30)
+    while True:
         try:
             results = ""
             t1 = time.time()
@@ -810,6 +835,13 @@ def auto_update_pingipv4_probe_stats():
             logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(e))
             logger.error("auto_update_pingipv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        t = datetime.datetime.now()
+        if t.second < 29:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+            future += datetime.timedelta(seconds=30)
+        elif t.second > 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+            future += datetime.timedelta(seconds=30)
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
@@ -821,7 +853,7 @@ def update_influx(raw_string, timestamp):
         for each in raw_string.splitlines():
             string_to_upload += each + " " + timestamp_string + "\n"
         upload_to_influx_sessions = requests.session()
-        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload)
+        # upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload)
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
         logger.info("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
         logger.info("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
