@@ -1283,11 +1283,11 @@ def update_influx(raw_string, timestamp):
         timestamp_string = str(int(timestamp.timestamp()) * 1000000000)
         for each in raw_string.splitlines():
             string_to_upload += each + " " + timestamp_string + "\n"
-        # upload_to_influx_sessions = requests.session()
-        # upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(5, 10))
-        # logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
-        # logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
-        # logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
+        upload_to_influx_sessions = requests.session()
+        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(5, 10))
+        logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
+        logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
+        logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
     except Exception as e:
         logger.error("update_influx - something went bad sending to InfluxDB")
         logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
