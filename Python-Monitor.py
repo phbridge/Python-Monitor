@@ -1220,10 +1220,10 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
 
 def master_curl_v6_probe_stats():
     try:
-        child_thread_curl_v4 = []
+        child_thread_curl_v6 = []
         for key in HOSTS_DB['curl_v6'].keys():
-            child_thread_curl_v4.append(threading.Thread(target=lambda: child_curl_v4(HOSTS_DB['curl_v6'][key])))
-            child_thread_curl_v4[-1].start()
+            child_thread_curl_v6.append(threading.Thread(target=lambda: child_curl_v6(HOSTS_DB['curl_v6'][key])))
+            child_thread_curl_v6[-1].start()
     except Exception as e:
         logger.error("master_curl_v6_probe_stats - something went bad with auto update")
         logger.error("master_curl_v6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
