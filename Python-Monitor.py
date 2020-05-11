@@ -1041,7 +1041,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
     time.sleep(time_to_sleep)
 
     while True:
-        logger.info("child_icmp_ping_v6 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+        logger.debug("child_icmp_ping_v6 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
         packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
         drop_pc = 0
@@ -1157,7 +1157,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
     time.sleep(time_to_sleep)
 
     while True:
-        logger.info("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+        logger.debug("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
         packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
         drop_pc = 0
