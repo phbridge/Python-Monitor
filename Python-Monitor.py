@@ -898,7 +898,7 @@ def child_curl_v4(host_dictionary, offset=10):
         for x in range(count):
             try:
                 c = pycurl.Curl()
-                c.setopt(c.IPRESOLVE, c.IPRESOLVE_V6)
+                c.setopt(c.IPRESOLVE, c.IPRESOLVE_V4)
                 c.setopt(c.TIMEOUT, timeout)
                 c.setopt(c.URL, url)
                 c.setopt(c.NOBODY, 1)
