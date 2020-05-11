@@ -237,8 +237,8 @@ def pingipv4(host_dictionary, influx_results=True):
     return results
 
 
-def child_threadded_icmpv4(host_dictionary, offset=5):
-    probe_name = "icmpv4"
+def child_thread_icmp_ping_ipv4(host_dictionary, offset=5):
+    probe_name = "icmp_ping_v4"
     logger.debug(host_dictionary)
     results = ""
     hostname = host_dictionary['address']
@@ -267,7 +267,7 @@ def child_threadded_icmpv4(host_dictionary, offset=5):
     time.sleep(time_to_sleep)
 
     while True:
-        logger.info("child_threadded_icmpv4 - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+        logger.info("child_thread_icmp_ping_ipv4 - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
         packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
         drop_pc = 0
@@ -311,7 +311,7 @@ def child_threadded_icmpv4(host_dictionary, offset=5):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, drop_pc)
         update_influx(results, future)
         tt3 = time.time()
-        logger.info("child_threadded_icmpv4 -" +
+        logger.info("child_thread_icmp_ping_ipv4 -" +
                     " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
@@ -907,18 +907,18 @@ def auto_update_pingipv6_probe_stats():
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
-def master_icmpv4_probe_stats():
+def master_icmp_ping_v4_probe_stats():
     try:
         child_thread_icmpipv4 = []
-        for key in HOSTS_DB['icmpv4'].keys():
-            child_thread_icmpipv4.append(threading.Thread(target=lambda: child_threadded_icmpv4(HOSTS_DB['icmpv4'][key])))
-            child_thread_icmpipv4[-1].start()
+        for key in HOSTS_DB['icmp_ping_v4'].keys():
+            child_thread_icmp_ping_ipv4.append(threading.Thread(target=lambda: child_threadded_icmp_ping_v4(HOSTS_DB['icmp_ping_v4'][key])))
+            child_thread_icmp_ping_ipv4[-1].start()
         print("All Threads Loaded")
     except Exception as e:
-        logger.error("auto_update_icmpv4_probe_stats - something went bad with auto update")
-        logger.error("auto_update_icmpv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
-        logger.error("auto_update_icmpv4_probe_statsauto_update_icmpv4_probe_stats - Unexpected error:" + str(e))
-        logger.error("auto_update_pingipv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        logger.error("master_icmp_ping_v4_probe_stats - something went bad with auto update")
+        logger.error("master_icmp_ping_v4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
+        logger.error("master_icmp_ping_v4_probe_stats - Unexpected error:" + str(e))
+        logger.error("master_icmp_ping_v4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
 
 
 def update_influx(raw_string, timestamp):
@@ -956,8 +956,8 @@ if __name__ == '__main__':
     HOSTS_DB = load_hosts_file_json()
 
     # thread per process
-    master_thread_icmpv4 = threading.Thread(target=lambda: master_icmpv4_probe_stats())
-    master_thread_icmpv4.start()
+    master_thread_icmp_ping_v4 = threading.Thread(target=lambda: master_icmp_ping_v4_probe_stats())
+    master_thread_icmp_ping_v4.start()
     master_thread_pingipv6 = threading.Thread(target=lambda: auto_update_pingipv6_probe_stats())
     master_thread_pingipv6.start()
     master_thread_curlipv4 = threading.Thread(target=lambda: auto_update_curlv4_probe_stats())
