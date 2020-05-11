@@ -719,6 +719,9 @@ def auto_update_curlv6_probe_stats():
         elif t.second > 30:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
             future += datetime.timedelta(seconds=30)
+        logger.info("auto_update_curlv6_probe_stats - future is for " + str(future))
+        logger.info("auto_update_curlv6_probe_stats - now is for " + str(datetime.datetime.now()))
+        logger.info("auto_update_curlv6_probe_stats - sleeping for " + str((future - datetime.datetime.now()).seconds))
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
@@ -760,6 +763,9 @@ def auto_update_curlv4_probe_stats():
         elif t.second > 30:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
             future += datetime.timedelta(seconds=30)
+        logger.info("auto_update_curlv4_probe_stats - future is for " + str(future))
+        logger.info("auto_update_curlv4_probe_stats - now is for " + str(datetime.datetime.now()))
+        logger.info("auto_update_curlv4_probe_stats - sleeping for " + str((future - datetime.datetime.now()).seconds))
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
@@ -801,6 +807,9 @@ def auto_update_pingipv6_probe_stats():
         elif t.second > 30:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
             future += datetime.timedelta(seconds=30)
+        logger.info("auto_update_pingipv6_probe_stats - future is for " + str(future))
+        logger.info("auto_update_pingipv6_probe_stats - now is for " + str(datetime.datetime.now()))
+        logger.info("auto_update_pingipv6_probe_stats - sleeping for " + str((future - datetime.datetime.now()).seconds))
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
@@ -842,11 +851,14 @@ def auto_update_pingipv4_probe_stats():
         elif t.second > 30:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
             future += datetime.timedelta(seconds=30)
+        logger.info("auto_update_pingipv4_probe_stats - future is for " + str(future))
+        logger.info("auto_update_pingipv4_probe_stats - now is for " + str(datetime.datetime.now()))
+        logger.info("auto_update_pingipv4_probe_stats - sleeping for " + str((future - datetime.datetime.now()).seconds))
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
 def update_influx(raw_string, timestamp):
-    logger.info("update_influx - " + "updateing influx")
+    logger.debug("update_influx - " + "updateing influx")
     try:
         string_to_upload = ""
         timestamp_string = str(int(timestamp.timestamp()) * 1000000000)
@@ -855,8 +867,8 @@ def update_influx(raw_string, timestamp):
         upload_to_influx_sessions = requests.session()
         upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload)
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
-        logger.info("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
-        logger.info("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
+        logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
+        logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
     except Exception as e:
         logger.error("update_influx - something went bad sending to InfluxDB")
         logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
