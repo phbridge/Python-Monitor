@@ -237,6 +237,100 @@ def pingipv4(host_dictionary, influx_results=True):
     return results
 
 
+def child_threadded_icmpv4(host_dictionary, offset=5):
+    probe_name = "icmpv4"
+    logger.debug(host_dictionary)
+    results = ""
+    hostname = host_dictionary['address']
+    count = int(host_dictionary['count'])
+    timeout = int(host_dictionary['timeout'])
+    tos = host_dictionary['TOS']
+    label = host_dictionary['label']
+    dns = host_dictionary['DNS']
+    group = host_dictionary['group']
+    if host_dictionary.get('interface') is None:
+        interface = INTERFACE
+    else:
+        interface = host_dictionary['interface']
+
+    t = datetime.datetime.now()
+    if t.second < 29:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+        future += datetime.timedelta(seconds=30)
+    elif t.second > 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+        future += datetime.timedelta(seconds=30)
+    else:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+        future += datetime.timedelta(seconds=90)
+    time_to_sleep = (future - datetime.datetime.now()).seconds
+    time.sleep(time_to_sleep)
+
+    while True:
+        logger.info("child_threadded_icmpv4 - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
+        address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
+        packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
+        drop_pc = 0
+        latency_average = -1
+        latency_total = 0
+        latency_min = -1
+        latency_max = -1
+        success = 0
+        fail = 0
+        tt1 = time.time()
+        for x in range(count):
+            t1 = time.time()
+            ans, unans = sr(packet, verbose=0, timeout=timeout, iface=interface)
+            t2 = time.time()
+            if str(ans).split(":")[4][0] == "1":
+                if not t2 - packet.sent_time > timeout:
+                    t = (t2 - packet.sent_time) * 1000
+                else:
+                    t = -1
+                if not t == -1:
+                    latency_total += t
+                    success += 1
+                    if t > latency_max:
+                        latency_max = t
+                    if latency_min == -1:
+                        latency_min = t
+                    elif t < latency_min:
+                        if not t == -1:
+                            latency_min = t
+                time.sleep(timeout / 2)
+            elif str(unans).split(":")[4][0] == "1":
+                fail += 1
+        if success > 0:
+            latency_average = latency_total / success
+        if fail > 0:
+            drop_pc += fail * (100 / count)
+        tt2 = time.time()
+        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
+        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
+        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", interface, str("{:.2f}".format(float(latency_max))))
+        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, drop_pc)
+        update_influx(results, future)
+        tt3 = time.time()
+        logger.info("child_threadded_icmpv4 -" +
+                    " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
+                    " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
+                    " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
+        t = datetime.datetime.now()
+        if t.second < 29:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+            future += datetime.timedelta(seconds=30)
+        elif t.second > 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+            future += datetime.timedelta(seconds=30)
+        else:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+            future += datetime.timedelta(seconds=90)
+        time_to_sleep = (future - datetime.datetime.now()).seconds
+        if 30 > time_to_sleep > 0:
+            time.sleep(time_to_sleep)
+        time.sleep(random.uniform(0, 1) * offset)
+
+
 def pingipv6(host_dictionary, influx_results=True):
     probe_name = "pingv6"
     logger.debug(host_dictionary)
@@ -813,48 +907,18 @@ def auto_update_pingipv6_probe_stats():
         time.sleep((future - datetime.datetime.now()).seconds)
 
 
-def auto_update_pingipv4_probe_stats():
-    t = datetime.datetime.now()
-    if t.second < 29:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        future += datetime.timedelta(seconds=30)
-    elif t.second > 30:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-        future += datetime.timedelta(seconds=30)
-    while True:
-        try:
-            results = ""
-            t1 = time.time()
-            with Pool(processes=8) as pool:
-                array_pingICMPv4 = pool.imap(pingipv4, HOSTS_DB['pingICMPv4'].values())
-                t2 = time.time()
-                for each in array_pingICMPv4:
-                    results += each
-                t3 = time.time()
-                update_influx(results, future)
-                t4 = time.time()
-                logger.info("auto_update_pingipv4_probe_stats -" +
-                            " t2 - t1=" + str("{:.2f}".format(float(t2 - t1))) +
-                            " t3 - t2=" + str("{:.2f}".format(float(t3 - t2))) +
-                            " t4 - t3= " + str("{:.2f}".format(float(t4 - t3))) +
-                            " t4 - t1= " + str("{:.2f}".format(float(t4 - t1))) +
-                            " t3 - t1= " + str("{:.2f}".format(float(t3 - t1))))
-        except Exception as e:
-            logger.error("auto_update_pingipv4_probe_stats - something went bad with auto update")
-            logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
-            logger.error("auto_update_pingipv4_probe_stats - Unexpected error:" + str(e))
-            logger.error("auto_update_pingipv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
-        t = datetime.datetime.now()
-        if t.second < 29:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=30)
-        elif t.second > 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-            future += datetime.timedelta(seconds=30)
-        logger.info("auto_update_pingipv4_probe_stats - future is for " + str(future))
-        logger.info("auto_update_pingipv4_probe_stats - now is for " + str(datetime.datetime.now()))
-        logger.info("auto_update_pingipv4_probe_stats - sleeping for " + str((future - datetime.datetime.now()).seconds))
-        time.sleep((future - datetime.datetime.now()).seconds)
+def master_icmpv4_probe_stats():
+    try:
+        child_thread_icmpipv4 = []
+        for key in HOSTS_DB['icmpv4'].keys():
+            child_thread_icmpipv4.append(threading.Thread(target=lambda: child_threadded_icmpv4(HOSTS_DB['icmpv4'][key])))
+            child_thread_icmpipv4[-1].start()
+        print("All Threads Loaded")
+    except Exception as e:
+        logger.error("auto_update_icmpv4_probe_stats - something went bad with auto update")
+        logger.error("auto_update_icmpv4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
+        logger.error("auto_update_icmpv4_probe_statsauto_update_icmpv4_probe_stats - Unexpected error:" + str(e))
+        logger.error("auto_update_pingipv4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
 
 
 def update_influx(raw_string, timestamp):
@@ -865,7 +929,7 @@ def update_influx(raw_string, timestamp):
         for each in raw_string.splitlines():
             string_to_upload += each + " " + timestamp_string + "\n"
         upload_to_influx_sessions = requests.session()
-        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload)
+        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(5, 10))
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
         logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
         logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
@@ -887,19 +951,19 @@ if __name__ == '__main__':
     logger.info("---------------------- STARTING ----------------------")
     logger.info("__main__ - " + "Python Monitor Logger")
 
-    # thread per process
-    thread_pingipv4 = threading.Thread(target=lambda: auto_update_pingipv4_probe_stats())
-    thread_pingipv4.start()
-    thread_pingipv6 = threading.Thread(target=lambda: auto_update_pingipv6_probe_stats())
-    thread_pingipv6.start()
-    thread_curlipv4 = threading.Thread(target=lambda: auto_update_curlv4_probe_stats())
-    thread_curlipv4.start()
-    thread_curlipv6 = threading.Thread(target=lambda: auto_update_curlv6_probe_stats())
-    thread_curlipv6.start()
-
     # GET_CURRENT_DB
     logger.info("__main__ - " + "GET_CURRENT_DB")
     HOSTS_DB = load_hosts_file_json()
+
+    # thread per process
+    master_thread_icmpv4 = threading.Thread(target=lambda: master_icmpv4_probe_stats())
+    master_thread_icmpv4.start()
+    master_thread_pingipv6 = threading.Thread(target=lambda: auto_update_pingipv6_probe_stats())
+    master_thread_pingipv6.start()
+    master_thread_curlipv4 = threading.Thread(target=lambda: auto_update_curlv4_probe_stats())
+    master_thread_curlipv4.start()
+    master_thread_curlipv6 = threading.Thread(target=lambda: auto_update_curlv6_probe_stats())
+    master_thread_curlipv6.start()
 
     # build flask instance.
     logger.info("__main__ - " + "starting flask")
