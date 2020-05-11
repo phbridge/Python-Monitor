@@ -909,7 +909,7 @@ def auto_update_pingipv6_probe_stats():
 
 def master_icmp_ping_v4_probe_stats():
     try:
-        child_thread_icmpipv4 = []
+        child_thread_icmp_ping_ipv4 = []
         for key in HOSTS_DB['icmp_ping_v4'].keys():
             child_thread_icmp_ping_ipv4.append(threading.Thread(target=lambda: child_icmp_ping_ipv4(HOSTS_DB['icmp_ping_v4'][key])))
             child_thread_icmp_ping_ipv4[-1].start()
