@@ -1060,20 +1060,20 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 rx = ans[0][1]
                 tx = ans[0][0]
                 delta = (rx.time - tx.sent_time)
-                if not delta > timeout:
-                    t = delta * 1000
+                if delta < timeout:
+                    latency = delta * 1000
                 else:
-                    t = -1
-                if not t == -1:
-                    latency_total += t
+                    latency = -1
+                if not latency == -1:
+                    latency_total += latency
                     success += 1
-                    if t > latency_max:
-                        latency_max = t
+                    if latency > latency_max:
+                        latency_max = latency
                     if latency_min == -1:
                         latency_min = t
-                    elif t < latency_min:
-                        if not t == -1:
-                            latency_min = t
+                    elif latency < latency_min:
+                        if not latency == -1:
+                            latency_min = latency
                 time.sleep(timeout / 2)
             # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263 as I couldnt get
             # conf.raw_layer = IPv6 or no filter to work
@@ -1176,23 +1176,24 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 rx = ans[0][1]
                 tx = ans[0][0]
                 delta = rx.time - tx.sent_time
-                logger.info(str(delta) + str(timeout) + str(label))
-                if not delta > timeout:
-                    t = delta * 1000
+                if delta < timeout:
+                    latency = delta * 1000
                 else:
-                    t = -1
-                if not t == -1:
-                    latency_total += t
+                    latency = -1
+                if not latency == -1:
+                    latency_total += latency
                     success += 1
-                    if t > latency_max:
-                        latency_max = t
+                    if latency > latency_max:
+                        latency_max = latency
                     if latency_min == -1:
-                        latency_min = t
-                    elif t < latency_min:
-                        if not t == -1:
-                            latency_min = t
+                        latency_min = latency
+                    elif latency < latency_min:
+                        if not latency == -1:
+                            latency_min = latency
                 time.sleep(timeout / 2)
             elif str(unans).split(":")[4][0] == "1":
+                logger.info(str(label) + "FAILED" + str(ans))
+                logger.info(str(label) + "FAILED" + str(unans))
                 fail += 1
         if success > 0:
             latency_average = latency_total / success
