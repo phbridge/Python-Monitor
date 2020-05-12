@@ -217,23 +217,17 @@ def pingipv4(host_dictionary, influx_results=True):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout / 2)
+            time.sleep(timeout)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
         latency_average = latency_total / success
     if fail > 0:
         drop_pc += fail * (100 / count)
-    if influx_results:
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", str("{:.2f}".format(float(latency_average))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", str("{:.2f}".format(float(latency_min))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", str("{:.2f}".format(float(latency_max))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", drop_pc)
-    else:
-        results += 'ICMPv4_LatencyAvg{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_average))))
-        results += 'ICMPv4_LatencyMin{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_min))))
-        results += 'ICMPv4_LatencyMax{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_max))))
-        results += 'ICMPv4_drop{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, drop_pc)
+    results += 'ICMPv4_LatencyAvg{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_average))))
+    results += 'ICMPv4_LatencyMin{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_min))))
+    results += 'ICMPv4_LatencyMax{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_max))))
+    results += 'ICMPv4_drop{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, drop_pc)
     return results
 
 
@@ -278,7 +272,7 @@ def pingipv6(host_dictionary, influx_results=True):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout / 2)
+            time.sleep(timeout)
         # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263 as I couldnt get
         # conf.raw_layer = IPv6 or no filter to work
         elif str(ans).split(":")[5][0] == "1" and str(ans[0]).split(" ")[16].split("=")[1] == str(address_from_hostname) and str(ans[0]).split(" ")[18] == "|<ICMPv6EchoReply":
@@ -296,23 +290,17 @@ def pingipv6(host_dictionary, influx_results=True):
                 elif t < latency_min:
                     if not t == -1:
                         latency_min = t
-            time.sleep(timeout / 2)
+            time.sleep(timeout)
         elif str(unans).split(":")[4][0] == "1":
             fail += 1
     if success > 0:
         latency_average = latency_total / success
     if fail > 0:
         drop_pc += fail * (100 / count)
-    if influx_results:
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", str("{:.2f}".format(float(latency_average))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", str("{:.2f}".format(float(latency_min))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", str("{:.2f}".format(float(latency_max))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", drop_pc)
-    else:
-        results += 'ICMPv6_LatencyAvg{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_average))))
-        results += 'ICMPv6_LatencyMin{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_min))))
-        results += 'ICMPv6_LatencyMax{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_max))))
-        results += 'ICMPv6_drop{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, drop_pc)
+    results += 'ICMPv6_LatencyAvg{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_average))))
+    results += 'ICMPv6_LatencyMin{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_min))))
+    results += 'ICMPv6_LatencyMax{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, str("{:.2f}".format(float(latency_max))))
+    results += 'ICMPv6_drop{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, drop_pc)
     return results
 
 
@@ -333,21 +321,18 @@ def curlv4(host_dictionary, influx_results=True):
     curl_connect_average = -1
     curl_app_connect_average = -1
     curl_pre_transfer_average = -1
-    # curl_start_transfer_average = -1
     curl_total_transfer_average = -1
 
     curl_lookup_min = -1
     curl_connect_min = -1
     curl_app_connect_min = -1
     curl_pre_transfer_min = -1
-    # curl_start_transfer_min = -1
     curl_total_transfer_min = -1
 
     curl_connect_max = -1
     curl_lookup_max = -1
     curl_app_connect_max = -1
     curl_pre_transfer_max = -1
-    # curl_start_transfer_max = -1
     curl_total_transfer_max = -1
 
     success = 0
@@ -362,7 +347,6 @@ def curlv4(host_dictionary, influx_results=True):
             c.setopt(c.URL, url)
             c.setopt(c.NOBODY, 1)
             c.perform()
-
             if c.getinfo(c.HTTP_CODE) == 200:
                 success += 1
                 if curl_connect_max < c.getinfo(c.CONNECT_TIME):
@@ -373,11 +357,8 @@ def curlv4(host_dictionary, influx_results=True):
                     curl_app_connect_max = c.getinfo(c.APPCONNECT_TIME)
                 if curl_pre_transfer_max < c.getinfo(c.PRETRANSFER_TIME):
                     curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
-                # if curl_start_transfer_max < c.getinfo(c.STARTTRANSFER_TIME):
-                #     curl_start_transfer_max = c.getinfo(c.STARTTRANSFER_TIME)
                 if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
                     curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
-
                 if curl_connect_min > c.getinfo(c.CONNECT_TIME):
                     curl_connect_min = c.getinfo(c.CONNECT_TIME)
                 if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
@@ -386,35 +367,28 @@ def curlv4(host_dictionary, influx_results=True):
                     curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
                 if curl_pre_transfer_min > c.getinfo(c.PRETRANSFER_TIME):
                     curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
-                # if curl_start_transfer_min > c.getinfo(c.STARTTRANSFER_TIME):
-                #     curl_start_transfer_min = c.getinfo(c.STARTTRANSFER_TIME)
                 if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
                     curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
                 if curl_connect_min == -1:
                     curl_connect_min = c.getinfo(c.CONNECT_TIME)
                     curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
                     curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
                     curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
-                    # curl_start_transfer_min = c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
                 if not curl_connect_average == -1:
                     curl_connect_average += c.getinfo(c.CONNECT_TIME)
                     curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
                     curl_app_connect_average += c.getinfo(c.APPCONNECT_TIME)
                     curl_pre_transfer_average += c.getinfo(c.PRETRANSFER_TIME)
-                    # curl_start_transfer_average += c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_average += c.getinfo(c.TOTAL_TIME)
                 else:
                     curl_connect_average = c.getinfo(c.CONNECT_TIME)
                     curl_lookup_average = c.getinfo(c.NAMELOOKUP_TIME)
                     curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
                     curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
-                    # curl_start_transfer_average = c.getinfo(c.STARTTRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
-                time.sleep(timeout / 2)
+                time.sleep(timeout)
             else:
                 fail += 1
         except pycurl.error as e:
@@ -432,7 +406,6 @@ def curlv4(host_dictionary, influx_results=True):
             logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
             fail += 1
             c.close()
-
     if success > 0:
         curl_connect_average = curl_connect_average / success
         curl_lookup_average = curl_lookup_average / success
@@ -441,39 +414,23 @@ def curlv4(host_dictionary, influx_results=True):
         curl_total_transfer_average = curl_total_transfer_average / success
     if fail > 0:
         drop_pc += fail * (100 / count)
-
-    if influx_results:
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", str("{:.2f}".format(float(curl_connect_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", str("{:.2f}".format(float(curl_connect_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMax", str("{:.2f}".format(float(curl_connect_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupAvg", str("{:.2f}".format(float(curl_lookup_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMin", str("{:.2f}".format(float(curl_lookup_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMax", str("{:.2f}".format(float(curl_lookup_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferAvg", str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMin", str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMax", str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferAvg", str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMin", str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMax", str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", drop_pc)
-    else:
-        results += 'curlv4_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_average)*1000)))
-        results += 'curlv4_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_min)*1000)))
-        results += 'curlv4_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_max)*1000)))
-        results += 'curlv4_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_average)*1000)))
-        results += 'curlv4_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_min)*1000)))
-        results += 'curlv4_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_max)*1000)))
-        results += 'curlv4_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
-        results += 'curlv4_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
-        results += 'curlv4_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
-        results += 'curlv4_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
-        results += 'curlv4_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
-        results += 'curlv4_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
-        results += 'curlv4_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
+    results += 'curlv4_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_average)*1000)))
+    results += 'curlv4_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_min)*1000)))
+    results += 'curlv4_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_max)*1000)))
+    results += 'curlv4_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_average)*1000)))
+    results += 'curlv4_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_min)*1000)))
+    results += 'curlv4_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_max)*1000)))
+    results += 'curlv4_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
+    results += 'curlv4_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
+    results += 'curlv4_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
+    results += 'curlv4_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
+    results += 'curlv4_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
+    results += 'curlv4_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
+    results += 'curlv4_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
     return results
 
 
-def curlv6(host_dictionary, influx_results=True):
+def curlv6(host_dictionary):
     probe_name = "curlv6"
     measurement_name = "N/A"
     logger.debug(host_dictionary)
@@ -559,7 +516,7 @@ def curlv6(host_dictionary, influx_results=True):
                     curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                 c.close()
-                time.sleep(timeout / 2)
+                time.sleep(timeout)
             else:
                 fail += 1
 
@@ -586,78 +543,27 @@ def curlv6(host_dictionary, influx_results=True):
         curl_total_transfer_average = curl_total_transfer_average / success
     if fail > 0:
         drop_pc += fail * (100 / count)
-    if influx_results:
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", str("{:.2f}".format(float(curl_connect_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", str("{:.2f}".format(float(curl_connect_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMax", str("{:.2f}".format(float(curl_connect_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupAvg", str("{:.2f}".format(float(curl_lookup_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMin", str("{:.2f}".format(float(curl_lookup_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMax", str("{:.2f}".format(float(curl_lookup_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferAvg", str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMin", str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMax", str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferAvg", str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMin", str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMax", str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", drop_pc)
-    else:
-        results += 'curlv6_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_average)*1000)))
-        results += 'curlv6_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_min)*1000)))
-        results += 'curlv6_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_max)*1000)))
-        results += 'curlv6_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_average)*1000)))
-        results += 'curlv6_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_min)*1000)))
-        results += 'curlv6_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_max)*1000)))
-        results += 'curlv6_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_average)*1000)))
-        results += 'curlv6_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_min)*1000)))
-        results += 'curlv6_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_max)*1000)))
-        results += 'curlv6_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_average)*1000)))
-        results += 'curlv6_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_min)*1000)))
-        results += 'curlv6_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_max)*1000)))
-        results += 'curlv6_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
+
+    results += 'curlv6_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_average)*1000)))
+    results += 'curlv6_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_min)*1000)))
+    results += 'curlv6_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_max)*1000)))
+    results += 'curlv6_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_average)*1000)))
+    results += 'curlv6_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_min)*1000)))
+    results += 'curlv6_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_max)*1000)))
+    results += 'curlv6_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_average)*1000)))
+    results += 'curlv6_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_min)*1000)))
+    results += 'curlv6_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_max)*1000)))
+    results += 'curlv6_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_average)*1000)))
+    results += 'curlv6_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_min)*1000)))
+    results += 'curlv6_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_max)*1000)))
+    results += 'curlv6_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
     return results
 
 
 @flask_app.route('/probe_stats')
 def get_stats():
     results = ""
-    # results += process_hosts_in_serial()
     results += process_hosts_in_parallel()
-    return Response(results, mimetype='text/plain')
-
-
-@flask_app.route('/pingipv4_probe_stats')
-def pingipv4_probe_stats():
-    logger.info("----------- Processing Serial -----------")
-    results = ""
-    for host in HOSTS_DB['pingICMPv4'].keys():
-        results += pingipv4(host_dictionary=HOSTS_DB['pingICMPv4'][host])
-    return Response(results, mimetype='text/plain')
-
-
-@flask_app.route('/pingipv6_probe_stats')
-def pingipv6_probe_stats():
-    logger.info("----------- Processing Serial -----------")
-    results = ""
-    for host in HOSTS_DB['pingICMPv6'].keys():
-        results += pingipv6(host_dictionary=HOSTS_DB['pingICMPv6'][host])
-    return Response(results, mimetype='text/plain')
-
-
-@flask_app.route('/curl_v4_probe_stats')
-def curlv4_get_stats():
-    logger.info("----------- Processing Serial -----------")
-    results = ""
-    for host in HOSTS_DB['curlv4'].keys():
-        results += curlv4(host_dictionary=HOSTS_DB['curlv4'][host])
-    return Response(results, mimetype='text/plain')
-
-
-@flask_app.route('/curl_v6probe_stats')
-def curlv6_get_stats():
-    logger.info("----------- Processing Serial -----------")
-    results = ""
-    for host in HOSTS_DB['curlv6'].keys():
-        results += curlv6(host_dictionary=HOSTS_DB['curlv6'][host])
     return Response(results, mimetype='text/plain')
 
 
@@ -782,7 +688,7 @@ def child_curl_v6(host_dictionary, offset=10):
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                     c.close()
-                    time.sleep(timeout / 2)
+                    time.sleep(timeout)
                 else:
                     fail += 1
 
@@ -947,7 +853,7 @@ def child_curl_v4(host_dictionary, offset=10):
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                     c.close()
-                    time.sleep(timeout / 2)
+                    time.sleep(timeout)
                 else:
                     fail += 1
 
@@ -1074,7 +980,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                     elif latency < latency_min:
                         if not latency == -1:
                             latency_min = latency
-                time.sleep(timeout / 2)
+                time.sleep(timeout)
             # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263 as I couldnt get
             # conf.raw_layer = IPv6 or no filter to work
             elif str(ans).split(":")[5][0] == "1" and str(ans[0]).split(" ")[16].split("=")[1] == str(
@@ -1093,7 +999,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                     elif t < latency_min:
                         if not t == -1:
                             latency_min = t
-                time.sleep(timeout / 2)
+                time.sleep(timeout)
             elif str(unans).split(":")[4][0] == "1":
                 fail += 1
         if success > 0:
@@ -1190,10 +1096,8 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                     elif latency < latency_min:
                         if not latency == -1:
                             latency_min = latency
-                time.sleep(timeout / 2)
+                time.sleep(timeout)
             elif str(unans).split(":")[4][0] == "1":
-                logger.info(str(label) + "FAILED" + str(ans))
-                logger.info(str(label) + "FAILED" + str(unans))
                 fail += 1
         if success > 0:
             latency_average = latency_total / success
