@@ -688,7 +688,7 @@ def child_curl_v6(host_dictionary, offset=10):
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                     c.close()
-                    time.sleep(timeout)
+                    time.sleep(timeout / 2)
                 else:
                     fail += 1
 
@@ -853,7 +853,7 @@ def child_curl_v4(host_dictionary, offset=10):
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                     c.close()
-                    time.sleep(timeout)
+                    time.sleep(timeout / 2)
                 else:
                     fail += 1
 
@@ -999,7 +999,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                     elif t < latency_min:
                         if not t == -1:
                             latency_min = t
-                time.sleep(timeout)
+                time.sleep(timeout / 2)
             elif str(unans).split(":")[4][0] == "1":
                 fail += 1
         if success > 0:
@@ -1096,7 +1096,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                     elif latency < latency_min:
                         if not latency == -1:
                             latency_min = latency
-                time.sleep(timeout)
+                time.sleep(timeout / 2)
             elif str(unans).split(":")[4][0] == "1":
                 fail += 1
         if success > 0:
