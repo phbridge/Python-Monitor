@@ -972,6 +972,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
             logger.error("child_icmp_ping_v6 " + label + "- something went bad sending to InfluxDB")
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e))
+            logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
             logger.error("child_icmp_ping_v6 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
 
         # print(str(output.splitlines()[-2]))
@@ -1107,6 +1108,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             logger.error("child_icmp_ping_v4 " + label + "- something went bad sending to InfluxDB")
             logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e))
+            logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e.output))
             logger.error("child_icmp_ping_v4 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
         # print(str(output.splitlines()[-2]))
 
