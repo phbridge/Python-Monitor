@@ -960,7 +960,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         # fail = 0
         tt1 = time.time()
         try:
-            output = subprocess.check_output(['ping6', '-c', str(count),'-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.PIPE)
+            output = subprocess.check_output(['ping6', '-c', str(count),'-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
             if not "100.0%" in str(output.splitlines()[-1]):
                 drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
@@ -1095,7 +1095,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         tt1 = time.time()
 
         try:
-            output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.PIPE)
+            output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
             if not "100.0%" in str(output.splitlines()[-1]):
                 drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
