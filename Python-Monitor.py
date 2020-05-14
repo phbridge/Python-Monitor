@@ -961,17 +961,18 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         tt1 = time.time()
         try:
             output = subprocess.check_output(['ping6', '-c', str(count),'-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)])
+            if not "100.0%" in str(output.splitlines()[-1]):
+                drop_pc = int(str(output.splitlines()[-2]).split(" ")[6])
+                latency_min = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
+                latency_average = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
+                latency_max = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
+            else:
+                drop_pc = int(str(output.splitlines()[-1]).split(" ")[6])
         except subprocess.CalledProcessError as e:
             logger.info(logger.info("child_icmp_ping_v4 - " + label + " - " + str(e)))
 
         # print(str(output.splitlines()[-2]))
-        if not "100.0%" in str(output.splitlines()[-1]):
-            drop_pc = int(str(output.splitlines()[-2]).split(" ")[6])
-            latency_min = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
-            latency_average = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
-            latency_max = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
-        else:
-            drop_pc = int(str(output.splitlines()[-1]).split(" ")[6])
+
 
         # for x in range(count):
         #     t1 = time.time()
@@ -1092,16 +1093,17 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
 
         try:
             output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)])
+            if not "100.0%" in str(output.splitlines()[-1]):
+                drop_pc = int(str(output.splitlines()[-2]).split(" ")[6])
+                latency_min = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
+                latency_average = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
+                latency_max = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
+            else:
+                drop_pc = int(str(output.splitlines()[-1]).split(" ")[6])
         except subprocess.CalledProcessError as e:
             logger.info(logger.info("child_icmp_ping_v4 - " + label + " - " + str(e)))
         # print(str(output.splitlines()[-2]))
-        if not "100.0%" in str(output.splitlines()[-1]):
-            drop_pc = int(str(output.splitlines()[-2]).split(" ")[6])
-            latency_min = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
-            latency_average = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
-            latency_max = int(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
-        else:
-            drop_pc = int(str(output.splitlines()[-1]).split(" ")[6])
+
 
         # print(str(output.splitlines()[-1]))
         # print(str(output.splitlines()[-1]).split(" ")[3])
