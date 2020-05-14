@@ -959,7 +959,11 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         # success = 0
         # fail = 0
         tt1 = time.time()
-        output = subprocess.check_output(['ping6', '-c', str(count),'-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)])
+        try:
+            output = subprocess.check_output(['ping6', '-c', str(count),'-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)])
+        except subprocess.CalledProcessError as e:
+            logger.info(logger.info("child_icmp_ping_v4 - " + label + " - " + str(e)))
+
         # print(str(output.splitlines()[-2]))
         if not "100.0%" in str(output.splitlines()[-1]):
             drop_pc = int(str(output.splitlines()[-2]).split(" ")[6])
@@ -1086,8 +1090,10 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         # fail = 0
         tt1 = time.time()
 
-
-        output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)])
+        try:
+            output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)])
+        except subprocess.CalledProcessError as e:
+            logger.info(logger.info("child_icmp_ping_v4 - " + label + " - " + str(e)))
         # print(str(output.splitlines()[-2]))
         if not "100.0%" in str(output.splitlines()[-1]):
             drop_pc = int(str(output.splitlines()[-2]).split(" ")[6])
