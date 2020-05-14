@@ -969,10 +969,13 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
             else:
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
+            if "100.0%" in str(output.splitlines()[-1]):
+                drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
+            logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
+        except Exception as e:
             logger.error("child_icmp_ping_v6 " + label + "- something went bad sending to InfluxDB")
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e))
-            logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
             logger.error("child_icmp_ping_v6 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
 
         # print(str(output.splitlines()[-2]))
@@ -1086,7 +1089,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         logger.debug("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         # address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
         # packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
-        drop_pc = 100
+        drop_pc = 0
         latency_average = -1
         # latency_total = 0
         latency_min = -1
@@ -1105,10 +1108,13 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             else:
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
+            if "100.0%" in str(output.splitlines()[-1]):
+                drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
+            logger.warning("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e.output))
+        except Exception as e:
             logger.error("child_icmp_ping_v4 " + label + "- something went bad sending to InfluxDB")
             logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e))
-            logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e.output))
             logger.error("child_icmp_ping_v4 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
         # print(str(output.splitlines()[-2]))
 
