@@ -951,7 +951,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         logger.debug("child_icmp_ping_v6 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         # address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
         # packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
-        drop_pc = 0
+        drop_pc = 100
         latency_average = -1
         # latency_total = 0
         latency_min = -1
@@ -1085,7 +1085,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         logger.debug("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         # address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
         # packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
-        drop_pc = 0
+        drop_pc = 100
         latency_average = -1
         # latency_total = 0
         latency_min = -1
