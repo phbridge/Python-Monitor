@@ -941,8 +941,8 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         latency_max = -1
         tt1 = time.time()
         try:
-            output = subprocess.check_output(['ping6', '-c', str(count),'-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
-            if not "100.0%" in str(output.splitlines()[-1]):
+            output = subprocess.check_output(['ping6', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
+            if "100.0%" not in str(output.splitlines()[-1]):
                 drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
                 latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
@@ -950,11 +950,18 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
             else:
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
-            if "100.0%" in str(output.splitlines()[-1]):
-                drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
-            logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
+            try:
+                if "100.0%" in str(output.splitlines()[-1]):
+                    drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
+                logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
+            except Exception as e:
+                drop_pc = 100
+                logger.error("child_icmp_ping_v6 in" + label + "- something went bad sending to doing icmp ping v6 inside")
+                logger.error("child_icmp_ping_v6 in" + label + "- Unexpected error:" + str(sys.exc_info()[0]))
+                logger.error("child_icmp_ping_v6 in" + label + "- Unexpected error:" + str(e))
+                logger.error("child_icmp_ping_v6 in" + label + "- TRACEBACK=" + str(traceback.format_exc()))
         except Exception as e:
-            logger.error("child_icmp_ping_v6 " + label + "- something went bad sending to InfluxDB")
+            logger.error("child_icmp_ping_v6 " + label + "- something went bad sending to doing icmp ping v6")
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e))
             logger.error("child_icmp_ping_v6 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
@@ -962,7 +969,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", interface, str("{:.2f}".format(float(latency_max))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, drop_pc)
+        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, str(drop_pc))
         update_influx(results, future)
         tt3 = time.time()
         logger.info("child_icmp_ping_v6 - " + label + " -"
@@ -1029,9 +1036,16 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             else:
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
-            if "100.0%" in str(output.splitlines()[-1]):
-                drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
-            logger.warning("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e.output))
+            try:
+                if "100.0%" in str(output.splitlines()[-1]):
+                    drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
+                logger.warning("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e.output))
+            except Exception as e:
+                drop_pc = 100
+                logger.error("child_icmp_ping_v4 in" + label + "- something went bad sending to doing icmp ping v4 inside")
+                logger.error("child_icmp_ping_v4 in" + label + "- Unexpected error:" + str(sys.exc_info()[0]))
+                logger.error("child_icmp_ping_v4 in" + label + "- Unexpected error:" + str(e))
+                logger.error("child_icmp_ping_v4 in" + label + "- TRACEBACK=" + str(traceback.format_exc()))
         except Exception as e:
             logger.error("child_icmp_ping_v4 " + label + "- something went bad sending to InfluxDB")
             logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
@@ -1572,7 +1586,7 @@ def update_influx(raw_string, timestamp):
         success = False
         attempts = 0
         attempt_error_array = []
-        while attempts < 3 and not success:
+        while attempts < 5 and not success:
             try:
                 upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(2, 5))
                 success = True
