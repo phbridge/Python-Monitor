@@ -1769,7 +1769,7 @@ def update_influx(raw_string, timestamp):
                 logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
                 break
         if not success:
-            logger.error("update_influx - FAILED after 3 attempts. Failed up update"+  + str(string_to_upload).splitlines()[0])
+            logger.error("update_influx - FAILED after 3 attempts. Failed up update" + str(string_to_upload.splitlines()[0]))
         upload_to_influx_sessions.close()
 
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
