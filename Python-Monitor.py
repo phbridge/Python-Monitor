@@ -1741,6 +1741,7 @@ def update_influx(raw_string, timestamp):
         upload_to_influx_sessions = requests.session()
         success = False
         attempts = 0
+        attempt_error_array = []
         while attempts < 3 and not success:
             try:
                 upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(2, 5))
@@ -1752,6 +1753,7 @@ def update_influx(raw_string, timestamp):
                 logger.debug("update_influx - Unexpected error:" + str(e))
                 logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
                 logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                attempt_error_array.append(str(sys.exc_info()[0]))
                 time.sleep(1)
             except requests.exceptions.ConnectionError as e:
                 attempts += 1
@@ -1760,6 +1762,7 @@ def update_influx(raw_string, timestamp):
                 logger.debug("update_influx - Unexpected error:" + str(e))
                 logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
                 logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                attempt_error_array.append(str(sys.exc_info()[0]))
                 time.sleep(1)
             except Exception as e:
                 logger.error("update_influx - attempted " + str(attempts) + " Failed")
@@ -1767,9 +1770,11 @@ def update_influx(raw_string, timestamp):
                 logger.error("update_influx - Unexpected error:" + str(e))
                 logger.error("update_influx - String was:" + str(string_to_upload).splitlines()[0])
                 logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                attempt_error_array.append(str(sys.exc_info()[0]))
                 break
         if not success:
             logger.error("update_influx - FAILED after 3 attempts. Failed up update" + str(string_to_upload.splitlines()[0]))
+            logger.error("update_influx - FAILED after 3 attempts. attempt_error_array:" + str(attempt_error_array))
         upload_to_influx_sessions.close()
 
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
