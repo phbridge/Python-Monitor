@@ -602,7 +602,6 @@ def child_curl_v6(host_dictionary, offset=10):
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-
     t = datetime.datetime.now()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -615,7 +614,6 @@ def child_curl_v6(host_dictionary, offset=10):
         future += datetime.timedelta(seconds=90)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     time.sleep(time_to_sleep)
-
     while True:
         logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
         curl_lookup_average = -1
@@ -692,7 +690,6 @@ def child_curl_v6(host_dictionary, offset=10):
                     time.sleep(timeout / 2)
                 else:
                     fail += 1
-
             except pycurl.error as e:
                 logger.error("child_curl_v6 - catching pycurl.error")
                 logger.error("child_curl_v6 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
@@ -708,7 +705,6 @@ def child_curl_v6(host_dictionary, offset=10):
                 logger.error("child_curl_v6 - TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
-
         if success > 0:
             curl_connect_average = curl_connect_average / success
             curl_lookup_average = curl_lookup_average / success
@@ -716,7 +712,6 @@ def child_curl_v6(host_dictionary, offset=10):
             curl_total_transfer_average = curl_total_transfer_average / success
         if fail > 0:
             drop_pc += fail * (100 / count)
-
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", interface, str("{:.2f}".format(float(curl_connect_average)*1000)))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", interface, str("{:.2f}".format(float(curl_connect_min)*1000)))
@@ -767,7 +762,6 @@ def child_curl_v4(host_dictionary, offset=10):
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-
     t = datetime.datetime.now()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -780,7 +774,6 @@ def child_curl_v4(host_dictionary, offset=10):
         future += datetime.timedelta(seconds=90)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     time.sleep(time_to_sleep)
-
     while True:
         logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
         curl_lookup_average = -1
@@ -822,7 +815,6 @@ def child_curl_v4(host_dictionary, offset=10):
                         curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
                     if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
                         curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
-
                     if curl_connect_min > c.getinfo(c.CONNECT_TIME):
                         curl_connect_min = c.getinfo(c.CONNECT_TIME)
                     if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
@@ -833,14 +825,12 @@ def child_curl_v4(host_dictionary, offset=10):
                         curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
                     if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
                         curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
                     if curl_connect_min == -1:
                         curl_connect_min = c.getinfo(c.CONNECT_TIME)
                         curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
                         curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
                         curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
                     if not curl_connect_average == -1:
                         curl_connect_average += c.getinfo(c.CONNECT_TIME)
                         curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
@@ -857,7 +847,6 @@ def child_curl_v4(host_dictionary, offset=10):
                     time.sleep(timeout / 2)
                 else:
                     fail += 1
-
             except pycurl.error as e:
                 logger.error("child_curl_v4 - catching pycurl.error")
                 logger.error("child_curl_v4 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
@@ -873,8 +862,6 @@ def child_curl_v4(host_dictionary, offset=10):
                 logger.error("child_curl_v4 - TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
-
-
         if success > 0:
             curl_connect_average = curl_connect_average / success
             curl_lookup_average = curl_lookup_average / success
@@ -882,7 +869,6 @@ def child_curl_v4(host_dictionary, offset=10):
             curl_total_transfer_average = curl_total_transfer_average / success
         if fail > 0:
             drop_pc += fail * (100 / count)
-
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", interface, str("{:.2f}".format(float(curl_connect_average) * 1000)))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", interface, str("{:.2f}".format(float(curl_connect_min) * 1000)))
@@ -900,7 +886,7 @@ def child_curl_v4(host_dictionary, offset=10):
         update_influx(results, future)
         tt3 = time.time()
         logger.info("child_curl_v4 - " + label + " -"
-                                                 " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
+                    " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
         t = datetime.datetime.now()
@@ -947,18 +933,12 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         future += datetime.timedelta(seconds=90)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     time.sleep(time_to_sleep)
-
     while True:
         logger.debug("child_icmp_ping_v6 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
-        # address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
-        # packet = IPv6(dst=address_from_hostname, tc=int(tos)) / ICMPv6EchoRequest()
         drop_pc = 100
         latency_average = -1
-        # latency_total = 0
         latency_min = -1
         latency_max = -1
-        # success = 0
-        # fail = 0
         tt1 = time.time()
         try:
             output = subprocess.check_output(['ping6', '-c', str(count),'-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
@@ -978,58 +958,6 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e))
             logger.error("child_icmp_ping_v6 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
-
-        # print(str(output.splitlines()[-2]))
-
-
-        # for x in range(count):
-        #     t1 = time.time()
-        #     ans, unans = sr(packet, verbose=0, timeout=timeout, iface=INTERFACE)
-        #     t2 = time.time()
-        #     if str(ans).split(":")[4][0] == "1":
-        #         rx = ans[0][1]
-        #         tx = ans[0][0]
-        #         delta = (rx.time - tx.sent_time)
-        #         if delta < timeout:
-        #             latency = delta * 1000
-        #         else:
-        #             latency = -1
-        #         if not latency == -1:
-        #             latency_total += latency
-        #             success += 1
-        #             if latency > latency_max:
-        #                 latency_max = latency
-        #             if latency_min == -1:
-        #                 latency_min = t
-        #             elif latency < latency_min:
-        #                 if not latency == -1:
-        #                     latency_min = latency
-        #         time.sleep(timeout)
-        #     # This is only in here to mitigate https://github.com/secdev/scapy/issues/2263 as I couldnt get
-        #     # conf.raw_layer = IPv6 or no filter to work
-        #     elif str(ans).split(":")[5][0] == "1" and str(ans[0]).split(" ")[16].split("=")[1] == str(
-        #             address_from_hostname) and str(ans[0]).split(" ")[18] == "|<ICMPv6EchoReply":
-        #         if not t2 - packet.sent_time > timeout:
-        #             t = (t2 - t1) * 1000
-        #         else:
-        #             t = -1
-        #         if not t == -1:
-        #             latency_total += t
-        #             success += 1
-        #             if t > latency_max:
-        #                 latency_max = t
-        #             if latency_min == -1:
-        #                 latency_min = t
-        #             elif t < latency_min:
-        #                 if not t == -1:
-        #                     latency_min = t
-        #         time.sleep(timeout / 2)
-        #     elif str(unans).split(":")[4][0] == "1":
-        #         fail += 1
-        # if success > 0:
-        #     latency_average = latency_total / success
-        # if fail > 0:
-        #     drop_pc += fail * (100 / count)
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
@@ -1072,7 +1000,6 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-
     t = datetime.datetime.now()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -1085,20 +1012,13 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         future += datetime.timedelta(seconds=90)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     time.sleep(time_to_sleep)
-
     while True:
         logger.debug("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
-        # address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
-        # packet = IP(dst=address_from_hostname, tos=int(tos)) / ICMP()
         drop_pc = 0
         latency_average = -1
-        # latency_total = 0
         latency_min = -1
         latency_max = -1
-        # success = 0
-        # fail = 0
         tt1 = time.time()
-
         try:
             output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
             if not "100.0%" in str(output.splitlines()[-1]):
@@ -1117,56 +1037,6 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e))
             logger.error("child_icmp_ping_v4 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
-        # print(str(output.splitlines()[-2]))
-
-
-        # print(str(output.splitlines()[-1]))
-        # print(str(output.splitlines()[-1]).split(" ")[3])
-        # print(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
-        # print(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
-        # print(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
-        #
-        # out, err = subprocess.Popen(['ping', '-c', str(count), '-W', str(timeout), str(hostname)], stdout=subprocess.PIPE).communicate()
-        # print(out)
-        # print(err)
-
-        # print(subprocess.check_output(['ping', '-c', str(count), '-W', str(timeout), '-Q', str(tos), '-I', str(interface), str(hostname)]))
-        # print(subprocess.run(
-        #     ['ping', '-c', str(count), '-W', str(timeout), str(hostname)]))
-        # print(subprocess.run(['ping', '-c', str(count), '-W', str(timeout), '-Q', str(tos), '-I', str(interface), str(hostname)]))
-
-        # for x in range(count):
-        #     t1 = time.time()
-        #     ans, unans = sr(packet, verbose=0, timeout=timeout, iface=interface)
-        #     t2 = time.time()
-        #     if str(ans).split(":")[4][0] == "1":
-        #         rx = ans[0][1]
-        #         tx = ans[0][0]
-        #         delta = rx.time - tx.sent_time
-        #         if delta < timeout:
-        #             latency = delta * 1000
-        #         else:
-        #             latency = -1
-        #         if not latency == -1:
-        #             latency_total += latency
-        #             success += 1
-        #             if latency > latency_max:
-        #                 latency_max = latency
-        #             if latency_min == -1:
-        #                 latency_min = latency
-        #             elif latency < latency_min:
-        #                 if not latency == -1:
-        #                     latency_min = latency
-        #         time.sleep(timeout / 2)
-        #     elif str(unans).split(":")[4][0] == "1":
-        #         fail += 1
-        #
-        #
-        # if success > 0:
-        #     latency_average = latency_total / success
-        # if fail > 0:
-        #     drop_pc += fail * (100 / count)
-
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
@@ -1216,7 +1086,6 @@ def child_tcp_ping_v6(host_dictionary, offset=10):
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-
     t = datetime.datetime.now()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -1229,7 +1098,6 @@ def child_tcp_ping_v6(host_dictionary, offset=10):
         future += datetime.timedelta(seconds=90)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     time.sleep(time_to_sleep)
-
     while True:
         logger.debug("child_tcp_ping_v6 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
@@ -1241,17 +1109,8 @@ def child_tcp_ping_v6(host_dictionary, offset=10):
         latency_max = -1
         success = 0
         fail = 0
-
         try:
             tt1 = time.time()
-            # output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
-            # if not "100.0%" in str(output.splitlines()[-1]):
-            #     drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
-            #     latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
-            #     latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
-            #     latency_max = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
-            # else:
-            #     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
             for x in range(count):
                 t1 = time.time()
                 ans, unans = sr(packet, verbose=0, timeout=timeout, iface=interface)
@@ -1287,7 +1146,6 @@ def child_tcp_ping_v6(host_dictionary, offset=10):
             logger.error("child_udp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_udp_ping_v4 " + label + "- Unexpected error:" + str(e))
             logger.error("child_udp_ping_v4 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
-
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
@@ -1337,7 +1195,6 @@ def child_tcp_ping_v4(host_dictionary, offset=10):
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-
     t = datetime.datetime.now()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -1350,7 +1207,6 @@ def child_tcp_ping_v4(host_dictionary, offset=10):
         future += datetime.timedelta(seconds=90)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     time.sleep(time_to_sleep)
-
     while True:
         logger.debug("child_tcp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET)[0][4][0]
@@ -1362,17 +1218,8 @@ def child_tcp_ping_v4(host_dictionary, offset=10):
         latency_max = -1
         success = 0
         fail = 0
-
         try:
             tt1 = time.time()
-            # output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
-            # if not "100.0%" in str(output.splitlines()[-1]):
-            #     drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
-            #     latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
-            #     latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
-            #     latency_max = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
-            # else:
-            #     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
             for x in range(count):
                 t1 = time.time()
                 ans, unans = sr(packet, verbose=0, timeout=timeout, iface=interface)
@@ -1398,7 +1245,6 @@ def child_tcp_ping_v4(host_dictionary, offset=10):
                     time.sleep(timeout / 2)
                 elif str(unans).split(":")[4][0] == "1":
                     fail += 1
-
             if success > 0:
                 latency_average = latency_total / success
             if fail > 0:
@@ -1408,7 +1254,6 @@ def child_tcp_ping_v4(host_dictionary, offset=10):
             logger.error("child_udp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_udp_ping_v4 " + label + "- Unexpected error:" + str(e))
             logger.error("child_udp_ping_v4 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
-
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
@@ -1458,7 +1303,6 @@ def child_udp_ping_v6(host_dictionary, offset=10):
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-
     t = datetime.datetime.now()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -1471,7 +1315,6 @@ def child_udp_ping_v6(host_dictionary, offset=10):
         future += datetime.timedelta(seconds=90)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     time.sleep(time_to_sleep)
-
     while True:
         logger.debug("child_udp_ping_v6 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         address_from_hostname = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
@@ -1483,17 +1326,8 @@ def child_udp_ping_v6(host_dictionary, offset=10):
         latency_max = -1
         success = 0
         fail = 0
-
         try:
             tt1 = time.time()
-            # output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
-            # if not "100.0%" in str(output.splitlines()[-1]):
-            #     drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
-            #     latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
-            #     latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
-            #     latency_max = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
-            # else:
-            #     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
             for x in range(count):
                 t1 = time.time()
                 ans, unans = sr(packet, verbose=0, timeout=timeout, iface=interface)
@@ -1519,7 +1353,6 @@ def child_udp_ping_v6(host_dictionary, offset=10):
                     time.sleep(timeout / 2)
                 elif str(unans).split(":")[4][0] == "1":
                     fail += 1
-
             if success > 0:
                 latency_average = latency_total / success
             if fail > 0:
@@ -1529,7 +1362,6 @@ def child_udp_ping_v6(host_dictionary, offset=10):
             logger.error("child_udp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
             logger.error("child_udp_ping_v4 " + label + "- Unexpected error:" + str(e))
             logger.error("child_udp_ping_v4 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
-
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
@@ -1604,8 +1436,6 @@ def child_udp_ping_v4(host_dictionary, offset=10):
         latency_max = -1
         success = 0
         fail = 0
-
-
         try:
             tt1 = time.time()
             # output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
@@ -1775,16 +1605,20 @@ def update_influx(raw_string, timestamp):
         if not success:
             logger.error("update_influx - FAILED after 3 attempts. Failed up update" + str(string_to_upload.splitlines()[0]))
             logger.error("update_influx - FAILED after 3 attempts. attempt_error_array:" + str(attempt_error_array))
-        upload_to_influx_sessions.close()
-
-        logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
-        logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
-        logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
+            upload_to_influx_sessions.close()
+            return
+        else:
+            upload_to_influx_sessions.close()
+            logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
+            logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
+            logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
+            return
     except Exception as e:
         logger.error("update_influx - something went bad sending to InfluxDB")
         logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
         logger.error("update_influx - Unexpected error:" + str(e))
         logger.error("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+    return
 
 
 if __name__ == '__main__':
