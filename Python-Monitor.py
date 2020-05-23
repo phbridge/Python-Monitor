@@ -1742,22 +1742,24 @@ def update_influx(raw_string, timestamp):
         attempts = 0
         while attempts < 3 and not success:
             try:
-                upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(5, 10))
+                upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(2, 5))
                 success = True
             except requests.exceptions.ConnectTimeout as e:
                 attempts += 1
-                logger.error("update_influx - attempted " + str(attempts) + " Failed Connection Timeout")
-                logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
-                logger.error("update_influx - Unexpected error:" + str(e))
-                logger.error("update_influx - String was:" + str(string_to_upload).splitlines()[0])
+                logger.debug("update_influx - attempted " + str(attempts) + " Failed Connection Timeout")
+                logger.debug("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
+                logger.debug("update_influx - Unexpected error:" + str(e))
+                logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
                 logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                time.sleep(1)
             except requests.exceptions.ConnectionError as e:
                 attempts += 1
-                logger.error("update_influx - attempted " + str(attempts) + " Failed Connection Error")
-                logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
-                logger.error("update_influx - Unexpected error:" + str(e))
-                logger.error("update_influx - String was:" + str(string_to_upload).splitlines()[0])
+                logger.debug("update_influx - attempted " + str(attempts) + " Failed Connection Error")
+                logger.debug("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
+                logger.debug("update_influx - Unexpected error:" + str(e))
+                logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
                 logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                time.sleep(1)
             except Exception as e:
                 logger.error("update_influx - attempted " + str(attempts) + " Failed")
                 logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
@@ -1765,6 +1767,9 @@ def update_influx(raw_string, timestamp):
                 logger.error("update_influx - String was:" + str(string_to_upload).splitlines()[0])
                 logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
                 break
+        if not success:
+            logger.error("update_influx - FAILED after 3 attempts. Failed up update"+  + str(string_to_upload).splitlines()[0])
+
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
         logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
         logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
