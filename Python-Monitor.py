@@ -874,6 +874,7 @@ def child_curl_v4(host_dictionary, offset=10):
                 fail += 1
                 c.close()
 
+
         if success > 0:
             curl_connect_average = curl_connect_average / success
             curl_lookup_average = curl_lookup_average / success
@@ -1769,6 +1770,7 @@ def update_influx(raw_string, timestamp):
                 break
         if not success:
             logger.error("update_influx - FAILED after 3 attempts. Failed up update"+  + str(string_to_upload).splitlines()[0])
+        upload_to_influx_sessions.close()
 
         logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
         logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
