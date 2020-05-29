@@ -956,8 +956,8 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
-                if "100.0%" in str(e.output.splitlines()[-1]):
-                    drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
+                if "100.0%" in str(e.output.splitlines()[-2]):
+                    drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 else:
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline())
@@ -1058,8 +1058,8 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
-                if "100.0%" in str(e.output.splitlines()[-1]):
-                    drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
+                if "100.0%" in str(e.output.splitlines()[-2]):
+                    drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 else:
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline())
@@ -1067,7 +1067,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-2]))
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-3]))
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
-                    
+
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines())
