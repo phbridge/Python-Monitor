@@ -588,7 +588,7 @@ def load_hosts_file_json():
     return {}
 
 
-def child_curl_v6(host_dictionary, offset=10):
+def child_curl_v6(host_dictionary, offset=5):
     probe_name = "curl_v6"
     logger.debug(host_dictionary)
     results = ""
@@ -687,7 +687,7 @@ def child_curl_v6(host_dictionary, offset=10):
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                     c.close()
-                    time.sleep(timeout / 2)
+                    time.sleep(timeout / 4)
                 else:
                     fail += 1
             except pycurl.error as e:
@@ -745,10 +745,12 @@ def child_curl_v6(host_dictionary, offset=10):
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             time.sleep(time_to_sleep)
-        time.sleep(random.uniform(0, 1) * offset)
+        else:
+            time.sleep(random.uniform(0, 1) * offset)
+            logger.warning("child_curl_v6 - had sleep time outside of valid range")
 
 
-def child_curl_v4(host_dictionary, offset=10):
+def child_curl_v4(host_dictionary, offset=5):
     probe_name = "curl_v4"
     logger.debug(host_dictionary)
     results = ""
@@ -844,7 +846,7 @@ def child_curl_v4(host_dictionary, offset=10):
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
                     c.close()
-                    time.sleep(timeout / 2)
+                    time.sleep(timeout / 4)
                 else:
                     fail += 1
             except pycurl.error as e:
@@ -902,7 +904,9 @@ def child_curl_v4(host_dictionary, offset=10):
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             time.sleep(time_to_sleep)
-        time.sleep(random.uniform(0, 1) * offset)
+        else:
+            time.sleep(random.uniform(0, 1) * offset)
+            logger.warning("child_curl_v4 - had sleep time outside of valid range")
 
 
 def child_icmp_ping_v6(host_dictionary, offset=10):
@@ -1588,7 +1592,7 @@ def update_influx(raw_string, timestamp):
         attempt_error_array = []
         while attempts < 5 and not success:
             try:
-                upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(2, 5))
+                upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(4, 2))
                 success = True
             except requests.exceptions.ConnectTimeout as e:
                 attempts += 1
@@ -1617,8 +1621,8 @@ def update_influx(raw_string, timestamp):
                 attempt_error_array.append(str(sys.exc_info()[0]))
                 break
         if not success:
-            logger.error("update_influx - FAILED after 3 attempts. Failed up update" + str(string_to_upload.splitlines()[0]))
-            logger.error("update_influx - FAILED after 3 attempts. attempt_error_array:" + str(attempt_error_array))
+            logger.error("update_influx - FAILED after 5 attempts. Failed up update " + str(string_to_upload.splitlines()[0]))
+            logger.error("update_influx - FAILED after 5 attempts. attempt_error_array: " + str(attempt_error_array))
             upload_to_influx_sessions.close()
             return
         else:
@@ -1639,7 +1643,7 @@ if __name__ == '__main__':
     # Create Logger
     logger = logging.getLogger("Python Monitor Logger")
     logger_handler = logging.handlers.TimedRotatingFileHandler(LOGFILE, backupCount=365, when='D')
-    logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(process)d:%(name)s - %(message)s')
     logger_handler.setFormatter(logger_formatter)
     logger.addHandler(logger_handler)
     logger.setLevel(logging.INFO)
