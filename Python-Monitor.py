@@ -692,11 +692,11 @@ def child_curl_v6(host_dictionary, offset=5):
                 else:
                     fail += 1
             except pycurl.error as e:
-                logger.error("child_curl_v6 - catching pycurl.error")
-                logger.error("child_curl_v6 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-                logger.error("child_curl_v6 - Unexpected error:" + str(sys.exc_info()[0]))
-                logger.error("child_curl_v6 - Unexpected error:" + str(e))
-                logger.error("child_curl_v6 - TRACEBACK=" + str(traceback.format_exc()))
+                logger.warning("child_curl_v6 - catching pycurl.error")
+                logger.warning("child_curl_v6 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+                logger.warning("child_curl_v6 - Unexpected error:" + str(sys.exc_info()[0]))
+                logger.warning("child_curl_v6 - Unexpected error:" + str(e))
+                logger.warning("child_curl_v6 - TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
             except Exception as e:
@@ -851,11 +851,11 @@ def child_curl_v4(host_dictionary, offset=5):
                 else:
                     fail += 1
             except pycurl.error as e:
-                logger.error("child_curl_v4 - catching pycurl.error")
-                logger.error("child_curl_v4 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-                logger.error("child_curl_v4 - Unexpected error:" + str(sys.exc_info()[0]))
-                logger.error("child_curl_v4 - Unexpected error:" + str(e))
-                logger.error("child_curl_v4 - TRACEBACK=" + str(traceback.format_exc()))
+                logger.warning("child_curl_v4 - catching pycurl.error")
+                logger.warning("child_curl_v4 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+                logger.warning("child_curl_v4 - Unexpected error:" + str(sys.exc_info()[0]))
+                logger.warning("child_curl_v4 - Unexpected error:" + str(e))
+                logger.warning("child_curl_v4 - TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
             except Exception as e:
@@ -1652,7 +1652,7 @@ def update_influx(raw_string, timestamp):
 
 if __name__ == '__main__':
     # Create Logger
-    logger = logging.getLogger("Python Monitor Logger")
+    logger = logging.getLogger("Python_Monitor")
     logger_handler = logging.handlers.TimedRotatingFileHandler(LOGFILE, backupCount=365, when='D')
     logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(process)d:%(thread)d:%(name)s - %(message)s')
     logger_handler.setFormatter(logger_formatter)
