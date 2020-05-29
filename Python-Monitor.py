@@ -959,10 +959,14 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 if "100.0%" in str(e.output.splitlines()[-1]):
                     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
                 else:
-                    logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
-                    logger.warning("child_icmp_ping_v6 in cmd " + str(e.cmd))
-                    logger.warning("child_icmp_ping_v6 in return " + str(e.returncode))
-                    logger.warning("child_icmp_ping_v6 in output " + str(e.output))
+                    logger.warning("child_icmp_ping_v6 in in " + str(e.output.splitlines()[-1]))
+                    logger.warning("child_icmp_ping_v6 in in " + str(e.output.splitlines()))
+                    logger.warning("child_icmp_ping_v6 in in " + str(str(e.output.splitlines()).splitlines()))
+                    logger.warning("child_icmp_ping_v6 in in " + str(str(e.output.splitlines()).splitlines()[-1]))
+                    logger.warning("child_icmp_ping_v6 in in " + label + "- Unexpected error:" + str(e.output))
+                    logger.warning("child_icmp_ping_v6 in in cmd " + str(e.cmd))
+                    logger.warning("child_icmp_ping_v6 in in return " + str(e.returncode))
+                    logger.warning("child_icmp_ping_v6 in in output " + str(e.output))
             except Exception as e:
                 drop_pc = 100
                 logger.error("child_icmp_ping_v6 in " + label + "- something went bad sending to doing icmp ping v6 inside")
@@ -1049,10 +1053,14 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 if "100.0%" in str(e.output.splitlines()[-1]):
                     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
                 else:
-                    logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
-                    logger.warning("child_icmp_ping_v6 in cmd " + str(e.cmd))
-                    logger.warning("child_icmp_ping_v6 in return " + str(e.returncode))
-                    logger.warning("child_icmp_ping_v6 in output " + str(e.output))
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()))
+                    logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()))
+                    logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()[-1]))
+                    logger.warning("child_icmp_ping_v4 in in " + label + "- Unexpected error:" + str(e.output))
+                    logger.warning("child_icmp_ping_v4 in in cmd " + str(e.cmd))
+                    logger.warning("child_icmp_ping_v4 in in return " + str(e.returncode))
+                    logger.warning("child_icmp_ping_v4 in in output " + str(e.output))
             except Exception as e:
                 drop_pc = 100
                 logger.error("child_icmp_ping_v4 in" + label + "- something went bad sending to doing icmp ping v4 inside")
