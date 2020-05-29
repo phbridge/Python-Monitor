@@ -947,7 +947,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         tt1 = time.time()
         try:
             output = subprocess.check_output(['ping6', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
-            if "100.0%" not in str(output.splitlines()[-1]):
+            if "100%" not in str(output.splitlines()[-1]):
                 drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
                 latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
@@ -956,7 +956,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
-                if "100.0%" in str(e.output.splitlines()[-2]):
+                if "100%" in str(e.output.splitlines()[-2]):
                     drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 else:
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline()[-1])
@@ -964,13 +964,13 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output))
                     # logger.warning("child_icmp_ping_v4 in in " + str(str(e.output).split("\n")))
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).split("\n")[])
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-2]))
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-3]))
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
-                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines())
-                    logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()))
-                    logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()[-1]))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-3]))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
+                    # # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines())
+                    # logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()[-1]))
                     logger.warning("child_icmp_ping_v6 in in " + label + "- Unexpected error:" + str(e.output))
                     logger.warning("child_icmp_ping_v6 in in cmd " + str(e.cmd))
                     logger.warning("child_icmp_ping_v6 in in return " + str(e.returncode))
@@ -1049,7 +1049,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         tt1 = time.time()
         try:
             output = subprocess.check_output(['ping4', '-c', str(count), '-Q', str(tos), '-W', str(timeout), '-I', str(interface), str(hostname)], stderr=subprocess.STDOUT)
-            if not "100.0%" in str(output.splitlines()[-1]):
+            if not "100%" in str(output.splitlines()[-1]):
                 drop_pc = float(str(output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 latency_min = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[0])
                 latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
@@ -1058,21 +1058,21 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
-                if "100.0%" in str(e.output.splitlines()[-2]):
+                if "100%" in str(e.output.splitlines()[-2]):
                     drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 else:
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline())
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-2]))
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-3]))
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
-
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
-                    logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-3]))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
+                    #
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines())
-                    logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()))
-                    logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()[-1]))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()[-1]))
                     logger.warning("child_icmp_ping_v4 in in " + label + "- Unexpected error:" + str(e.output))
                     logger.warning("child_icmp_ping_v4 in in cmd " + str(e.cmd))
                     logger.warning("child_icmp_ping_v4 in in return " + str(e.returncode))
