@@ -956,12 +956,13 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
-                logger.warning("child_icmp_ping_v6 in cmd " +str(e.cmd))
-                logger.warning("child_icmp_ping_v6 in return" +str(e.returncode))
-                logger.warning("child_icmp_ping_v6 in output" +str(e.output))
-                if "100.0%" in str(output.splitlines()[-1]):
+                if "100.0%" in str(e.output.splitlines()[-1]):
                     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
-                logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
+                else:
+                    logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
+                    logger.warning("child_icmp_ping_v6 in cmd " + str(e.cmd))
+                    logger.warning("child_icmp_ping_v6 in return " + str(e.returncode))
+                    logger.warning("child_icmp_ping_v6 in output " + str(e.output))
             except Exception as e:
                 drop_pc = 100
                 logger.error("child_icmp_ping_v6 in " + label + "- something went bad sending to doing icmp ping v6 inside")
@@ -1045,9 +1046,13 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
-                if "100.0%" in str(output.splitlines()[-1]):
+                if "100.0%" in str(e.output.splitlines()[-1]):
                     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
-                logger.warning("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e.output))
+                else:
+                    logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
+                    logger.warning("child_icmp_ping_v6 in cmd " + str(e.cmd))
+                    logger.warning("child_icmp_ping_v6 in return " + str(e.returncode))
+                    logger.warning("child_icmp_ping_v6 in output " + str(e.output))
             except Exception as e:
                 drop_pc = 100
                 logger.error("child_icmp_ping_v4 in" + label + "- something went bad sending to doing icmp ping v4 inside")
@@ -1647,7 +1652,7 @@ if __name__ == '__main__':
     # Create Logger
     logger = logging.getLogger("Python Monitor Logger")
     logger_handler = logging.handlers.TimedRotatingFileHandler(LOGFILE, backupCount=365, when='D')
-    logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(process)d:%(name)s - %(message)s')
+    logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(process)d:%(thread)d:%(name)s - %(message)s')
     logger_handler.setFormatter(logger_formatter)
     logger.addHandler(logger_handler)
     logger.setLevel(logging.INFO)
