@@ -961,7 +961,12 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 else:
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline())
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(str(e.output).split("\n")))
+                    # logger.warning("child_icmp_ping_v4 in in " + str(e.output).split("\n")[])
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-2]))
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-3]))
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines())
                     logger.warning("child_icmp_ping_v4 in in " + str(str(e.output.splitlines()).splitlines()))
@@ -1058,6 +1063,11 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 else:
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitline())
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-2]))
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-3]))
+                    logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
+                    
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-1]))
                     logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines()[-1])
                     # logger.warning("child_icmp_ping_v4 in in " + str(e.output).splitlines())
