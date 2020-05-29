@@ -392,7 +392,8 @@ def curlv4(host_dictionary, influx_results=True):
                 time.sleep(timeout)
             else:
                 fail += 1
-        except pycurl.error as e:
+        except\
+                pycurl.error as e:
             logger.error("curlv4 - catching pycurl.error")
             logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
             logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
@@ -955,15 +956,18 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
+                logger.warning("child_icmp_ping_v6 in cmd " +str(e.cmd))
+                logger.warning("child_icmp_ping_v6 in return" +str(e.returncode))
+                logger.warning("child_icmp_ping_v6 in output" +str(e.output))
                 if "100.0%" in str(output.splitlines()[-1]):
                     drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
                 logger.warning("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e.output))
             except Exception as e:
                 drop_pc = 100
-                logger.error("child_icmp_ping_v6 in" + label + "- something went bad sending to doing icmp ping v6 inside")
-                logger.error("child_icmp_ping_v6 in" + label + "- Unexpected error:" + str(sys.exc_info()[0]))
-                logger.error("child_icmp_ping_v6 in" + label + "- Unexpected error:" + str(e))
-                logger.error("child_icmp_ping_v6 in" + label + "- TRACEBACK=" + str(traceback.format_exc()))
+                logger.error("child_icmp_ping_v6 in " + label + "- something went bad sending to doing icmp ping v6 inside")
+                logger.error("child_icmp_ping_v6 in " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
+                logger.error("child_icmp_ping_v6 in " + label + "- Unexpected error:" + str(e))
+                logger.error("child_icmp_ping_v6 in " + label + "- TRACEBACK=" + str(traceback.format_exc()))
         except Exception as e:
             logger.error("child_icmp_ping_v6 " + label + "- something went bad sending to doing icmp ping v6")
             logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
