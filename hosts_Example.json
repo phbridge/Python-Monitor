@@ -1,118 +1,184 @@
 {
-    "pingICMPv4": {
-        "loopback-default": {
-            "address": "127.0.0.1",
+    "icmp_ping_v4": {
+        "gateway-default": {
+            "label": "gateway-default",
+            "address": "10.60.206.65",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
-            "timeout": "2",
+            "TOS": "0",
+            "timeout": "3",
+            "count": "5"
+        },
+        "googleDNS-default": {
+            "label": "googleDNS-default",
+            "address": "8.8.8.8",
+            "group": "common",
+            "DNS": "False",
+            "TOS": "0",
+            "timeout": "3",
+            "count": "5"
+        },
+        "Cisco-default": {
+            "label": "Cisco-default",
+            "address": "cisco.com",
+            "group": "common",
+            "DNS": "True",
+            "TOS": "0",
+            "timeout": "3",
+            "count": "5"
+        },
+        "a.root-servers.net": {
+            "label": "a.root-servers.net",
+            "address": "a.root-servers.net",
+            "group": "root-servers",
+            "DNS": "True",
+            "TOS": "0",
+            "timeout": "3",
             "count": "5"
         }
     },
     "pingTCPv4": {
         "loopback-default": {
+            "label": "loopback-default",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
         }
     },
     "TCPpingv4": {
         "loopback-default": {
+            "label": "loopback-default",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
-        },
+        }
     },
-    "curlv4": {
+    "curl_v4": {
         "AWS-us-east-1(N.Virgina)": {
-            "address": "https://ec2.us-east-1.amazonaws.com/ping",
+            "label": "AWS-us-east-1(N.Virgina)",
+            "address": "http://3.80.0.0/green-icon.gif",
+            "DNS": "False",
             "group": "AWS",
-            "timeout": "4",
+            "timeout": "6",
+            "count": "3"
+        },
+        "AWS-us-gov-west-1(US)": {
+            "label": "AWS-us-gov-west-1(US)",
+            "address": "http://15.200.0.254/green-icon.gif",
+            "DNS": "False",
+            "group": "AWS",
+            "timeout": "6",
             "count": "3"
         }
     },
     "DNSpingv4": {
         "loopback-default": {
+            "label": "loopback-default",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
-        },
+        }
     },
     "UDPpingv4": {
         "loopback-default": {
+            "label": "loopback-default",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
-        },
-    }
-    "pingICMPv6": {
-        "loopback-default": {
-            "address": "::",
+        }
+    },
+    "icmp_ping_v6": {
+        "googleDNS-default": {
+            "label": "googleDNS-default",
+            "address": "2001:4860:4860::8888",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
-            "timeout": "2",
+            "TOS": "0",
+            "timeout": "3",
+            "count": "5"
+        },
+        "Cisco-default": {
+            "label": "Cisco-default",
+            "address": "cisco.com",
+            "group": "common",
+            "DNS": "True",
+            "TOS": "0",
+            "timeout": "3",
             "count": "5"
         }
     },
     "pingTCPv6": {
         "loopback-default": {
+            "label": "",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
-        },
+        }
     },
     "TCPpingv6": {
         "loopback-default": {
+            "label": "loopback-default",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
-        },
+        }
     },
-    "curlv6": {
+    "curl_v6": {
         "AWS-us-east-1(N.Virgina)": {
-            "address": "https://ec2.us-east-1.amazonaws.com/ping",
+            "label": "AWS-us-east-1(N.Virgina)",
+            "address": "http://2600-1f18-2fe-900--ec2.ipv6.ec2-reachability.amazonaws.com/green-icon.gif",
+            "DNS": "True",
             "group": "AWS",
-            "timeout": "4",
+            "timeout": "6",
+            "count": "3"
+        },
+        "AWS-us-gov-west-1(US)": {
+            "label": "AWS-us-gov-west-1(US)",
+            "address": "http://2600-1f12-8f0-2f00--ec2.ipv6.ec2-reachability.amazonaws.com/green-icon.gif",
+            "DNS": "True",
+            "group": "AWS",
+            "timeout": "6",
             "count": "3"
         }
     },
     "DNSpingv6": {
         "loopback-default": {
+            "label": "loopback-default",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
-        },
+        }
     },
     "UDPpingv6": {
         "loopback-default": {
+            "label": "loopback-default",
             "address": "127.0.0.1",
             "group": "common",
             "DNS": "False",
-            "DSCP": "0",
+            "TOS": "0",
             "timeout": "2",
             "count": "5"
-        },
+        }
     }
 }
