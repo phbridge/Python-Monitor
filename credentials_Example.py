@@ -5,3 +5,4 @@ LOGFILE = ABSOLUTE_PATH + "/Python-Monitor_%s.log" % FLASK_PORT
 LOGCOUNT = 16
 LOGBYTES = 16777216
 INTERFACE = "ens192"
+INFLUX_DB_Path = "http://influx.co.uk:8086/write?db=PythonAssurance&u=<username>&p=<password>"

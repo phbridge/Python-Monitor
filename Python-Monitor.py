@@ -25,9 +25,9 @@
 # [see above comments on Beer, Wine, Steak and Greggs.].
 #
 # Version Control               Comments
-# Version 0.01 Date 06/05/19    Initial draft
-# Version 0.1  Date 17/05/19    Improved Error handling
-# Version 0.2  Date 18/05/19    Restructured some code to work better of various OS's
+# Version 0.01 Date 27/07/20    Initial draft
+# Version 0.1  Date 30/07/20    Improved Error handling
+# Version 0.2  Date 03/07/20    Restructured some code to work better of various OS's
 #
 # Version 6.9 Date xx/xx/xx     Took over world and actually got paid for value added work....If your reading this
 #                               approach me on Linked-In for details of weekend "daily" rate
@@ -42,14 +42,15 @@
 # 6.0 DONE Implement multiprocessing
 # 7.0 NOT FOR THIS PRIJECT Implement connection reuse - Ideally keep SSH connection open full time
 # 8.0 Something better than time.sleep() waiting for response.
+# 9.0 Figure out why sometimes the CURL probes die
+# 10.0 Implement local data collection for bulk upload to influx rather than per probe for scalability
 #
 
 from flask import Flask             # Flask to serve pages
 from flask import Response          # Flask to serve pages
-import logging.handlers             # Needed for loggin
+import logging.handlers             # Needed for logging
 import time                         # Only for time.sleep
 import wsgiserver                   # from gevent.wsgi
-import paramiko                     # used for the SSH session
 import socket                       # only used to raise socket exceptions
 from multiprocessing import Pool    # trying to run in parallel rather than in sequence
 import credentials
@@ -744,11 +745,13 @@ def child_curl_v6(host_dictionary, offset=5):
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
         time_to_sleep = (future - datetime.datetime.now()).seconds
-        if 30 > time_to_sleep > 0:
+        # if 30 > time_to_sleep > 0: # guess comit to fix timing thing
+        if 29 > time_to_sleep > 0:  # guess comit to fix timing thing
             time.sleep(time_to_sleep)
         else:
-            time.sleep(random.uniform(0, 1) * offset)
-            logger.warning("child_curl_v6 - had sleep time outside of valid range")
+            time.sleep(random.uniform(0, 1) * offset) # guess comit to fix timing thing
+            time.sleep(90)
+            logger.warning("child_curl_v4 - had sleep time outside of valid range value was %s" % time_to_sleep)
 
 
 def child_curl_v4(host_dictionary, offset=5):
@@ -903,11 +906,13 @@ def child_curl_v4(host_dictionary, offset=5):
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
         time_to_sleep = (future - datetime.datetime.now()).seconds
-        if 30 > time_to_sleep > 0:
+        # if 30 > time_to_sleep > 0: guess comit to fix timing thing
+        if 29 > time_to_sleep > 0: # guess comit to fix timing thing
             time.sleep(time_to_sleep)
         else:
-            time.sleep(random.uniform(0, 1) * offset)
-            logger.warning("child_curl_v4 - had sleep time outside of valid range")
+            time.sleep(random.uniform(0, 1) * offset)  # guess comit to fix timing thing
+            time.sleep(90)
+            logger.warning("child_curl_v4 - had sleep time outside of valid range value was %s" % time_to_sleep)
 
 
 def child_icmp_ping_v6(host_dictionary, offset=10):
