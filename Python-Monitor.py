@@ -987,10 +987,10 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, str(drop_pc))
         update_influx(results, future)
         tt3 = time.time()
-        logger.info("child_icmp_ping_v6 - " + label + " -"
-                    " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
-                    " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
-                    " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
+        logger.debug("child_icmp_ping_v6 - " + label + " -"
+                     " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
+                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
+                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -1078,10 +1078,10 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, drop_pc)
         update_influx(results, future)
         tt3 = time.time()
-        logger.info("child_icmp_ping_v4 - " + label + " -"
-                    " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
-                    " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
-                    " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
+        logger.debug("child_icmp_ping_v4 - " + label + " -"
+                     " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
+                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
+                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
