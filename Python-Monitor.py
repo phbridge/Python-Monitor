@@ -522,7 +522,6 @@ def curlv6(host_dictionary):
                 time.sleep(timeout)
             else:
                 fail += 1
-
         except pycurl.error as e:
             logger.error("curlv6 - catching pycurl.error")
             logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
@@ -730,7 +729,7 @@ def child_curl_v6(host_dictionary, offset=5):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", interface, drop_pc)
         update_influx(results, future)
         tt3 = time.time()
-        logger.info("child_curl_v6 - " + label + " -"
+        logger.debug("child_curl_v6 - " + label + " -"
                     " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
@@ -891,7 +890,7 @@ def child_curl_v4(host_dictionary, offset=5):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", interface, drop_pc)
         update_influx(results, future)
         tt3 = time.time()
-        logger.info("child_curl_v4 - " + label + " -"
+        logger.debug("child_curl_v4 - " + label + " -"
                     " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
