@@ -1712,11 +1712,11 @@ if __name__ == '__main__':
     logger_handler.setFormatter(logger_formatter)
     logger.addHandler(logger_handler)
     logger.setLevel(logging.INFO)
-    function_logger.info("---------------------- STARTING ----------------------")
-    function_logger.info("__main__ - " + "Python Monitor Logger")
+    logger.info("---------------------- STARTING ----------------------")
+    logger.info("__main__ - " + "Python Monitor Logger")
 
     # GET_CURRENT_DB
-    function_logger.info("__main__ - " + "GET_CURRENT_DB")
+    logger.info("__main__ - " + "GET_CURRENT_DB")
     HOSTS_DB = load_hosts_file_json()
 
     # thread per process
@@ -1730,6 +1730,6 @@ if __name__ == '__main__':
     master_thread_curl_v6.start()
 
     # build flask instance.
-    function_logger.info("__main__ - " + "starting flask")
+    logger.info("__main__ - " + "starting flask")
     http_server = wsgiserver.WSGIServer(host=FLASK_HOST, port=FLASK_PORT, wsgi_app=flask_app)
     http_server.start()
