@@ -595,8 +595,7 @@ def get_stats():
 
 
 def load_hosts_file_json():
-    function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
+    function_logger = logger.getChild("%s.%s" % (inspect.stack()[1][3], inspect.stack()[0][3]))
     try:
         function_logger.debug("load_user_statistics_file_json - opening user statistics file")
         user_filename = ABSOLUTE_PATH + "hosts.json"
@@ -1632,7 +1631,6 @@ def master_icmp_ping_v6_probe_stats():
 
 def master_icmp_ping_v4_probe_stats():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     try:
         child_thread_icmp_ping_v4 = []
         for key in HOSTS_DB['icmp_ping_v4'].keys():
