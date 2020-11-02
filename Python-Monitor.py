@@ -768,9 +768,12 @@ def child_curl_v6(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
+
         # manual garbage collection for multithreadded thing
-        if t.hour in {4, 8, 12, 16, 20, 0}:
-            gc.collect()
+        if t.minute == 0:
+            if t.hour in {4, 8, 12, 16, 20, 0}:
+                gc.collect()
+
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: # guess comit to fix timing thing
         if 29 > time_to_sleep > 0:  # guess comit to fix timing thing
@@ -932,8 +935,10 @@ def child_curl_v4(host_dictionary, offset=5):
             future += datetime.timedelta(seconds=90)
 
         # manual garbage collection for multithreadded thing
-        if t.hour in {4, 8, 12, 16, 20, 0}:
-            gc.collect()
+
+        if t.minute == 0:
+            if t.hour in {4, 8, 12, 16, 20, 0}:
+                gc.collect()
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: guess comit to fix timing thing
@@ -1029,15 +1034,15 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-
         # manual garbage collection for multithreadded thing
-        if t.hour in {4, 8, 12, 16, 20, 0}:
-            gc.collect()
-
+        if t.minute == 0:
+            if t.hour in {4, 8, 12, 16, 20, 0}:
+                gc.collect()
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             time.sleep(time_to_sleep)
         time.sleep(random.uniform(0, 1) * offset)
+
 
 
 def child_icmp_ping_v4(host_dictionary, offset=10):
@@ -1125,8 +1130,9 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             future += datetime.timedelta(seconds=90)
 
         # manual garbage collection for multithreadded thing
-        if t.hour in {4, 8, 12, 16, 20, 0}:
-            gc.collect()
+        if t.minute == 0:
+            if t.hour in {4, 8, 12, 16, 20, 0}:
+                gc.collect()
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
