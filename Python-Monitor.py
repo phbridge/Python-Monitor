@@ -65,6 +65,7 @@ import requests
 import datetime
 import subprocess
 import inspect
+import gc
 
 FLASK_HOST = credentials.FLASK_HOST
 FLASK_PORT = credentials.FLASK_PORT
@@ -617,7 +618,6 @@ def load_hosts_file_json():
 
 def child_curl_v6(host_dictionary, offset=5):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "curl_v6"
     function_logger.debug(host_dictionary)
     results = ""
@@ -720,18 +720,18 @@ def child_curl_v6(host_dictionary, offset=5):
                 else:
                     fail += 1
             except pycurl.error as e:
-                function_logger.warning("child_curl_v6 - catching pycurl.error")
-                function_logger.warning("child_curl_v6 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-                function_logger.warning("child_curl_v6 - Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.warning("child_curl_v6 - Unexpected error:" + str(e))
-                function_logger.warning("child_curl_v6 - TRACEBACK=" + str(traceback.format_exc()))
+                function_logger.warning("catching pycurl.error")
+                function_logger.warning("label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+                function_logger.warning("Unexpected error:" + str(sys.exc_info()[0]))
+                function_logger.warning("Unexpected error:" + str(e))
+                function_logger.warning("TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
             except Exception as e:
-                function_logger.error("child_curl_v6 - Curl'ing to host")
-                function_logger.error("child_curl_v6 - Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.error("child_curl_v6 - Unexpected error:" + str(e))
-                function_logger.error("child_curl_v6 - TRACEBACK=" + str(traceback.format_exc()))
+                function_logger.error("Curl'ing to host")
+                function_logger.error("Unexpected error:" + str(sys.exc_info()[0]))
+                function_logger.error("Unexpected error:" + str(e))
+                function_logger.error("TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
         if success > 0:
@@ -757,10 +757,7 @@ def child_curl_v6(host_dictionary, offset=5):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", interface, drop_pc)
         update_influx(results, future)
         tt3 = time.time()
-        function_logger.debug("child_curl_v6 - " + label + " -"
-                    " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
-                    " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
-                    " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
+        function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -771,6 +768,9 @@ def child_curl_v6(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
+        # manual garbage collection for multithreadded thing
+        if t.hour in {4, 8, 12, 16, 20, 0}:
+            gc.collect()
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: # guess comit to fix timing thing
         if 29 > time_to_sleep > 0:  # guess comit to fix timing thing
@@ -778,12 +778,11 @@ def child_curl_v6(host_dictionary, offset=5):
         else:
             time.sleep(random.uniform(0, 1) * offset) # guess comit to fix timing thing
             time.sleep(90)
-            function_logger.warning("child_curl_v4 - had sleep time outside of valid range value was %s" % time_to_sleep)
+            function_logger.warning("had sleep time outside of valid range value was %s" % time_to_sleep)
 
 
 def child_curl_v4(host_dictionary, offset=5):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "curl_v4"
     function_logger.debug(host_dictionary)
     results = ""
@@ -883,18 +882,18 @@ def child_curl_v4(host_dictionary, offset=5):
                 else:
                     fail += 1
             except pycurl.error as e:
-                function_logger.warning("child_curl_v4 - catching pycurl.error")
-                function_logger.warning("child_curl_v4 - label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-                function_logger.warning("child_curl_v4 - Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.warning("child_curl_v4 - Unexpected error:" + str(e))
-                function_logger.warning("child_curl_v4 - TRACEBACK=" + str(traceback.format_exc()))
+                function_logger.warning("catching pycurl.error")
+                function_logger.warning("label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+                function_logger.warning("Unexpected error:" + str(sys.exc_info()[0]))
+                function_logger.warning("Unexpected error:" + str(e))
+                function_logger.warning("TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
             except Exception as e:
-                function_logger.error("child_curl_v4 - Curl'ing to host")
-                function_logger.error("child_curl_v4 - Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.error("child_curl_v4 - Unexpected error:" + str(e))
-                function_logger.error("child_curl_v4 - TRACEBACK=" + str(traceback.format_exc()))
+                function_logger.error("Curl'ing to host")
+                function_logger.error("Unexpected error:" + str(sys.exc_info()[0]))
+                function_logger.error("Unexpected error:" + str(e))
+                function_logger.error("TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
         if success > 0:
@@ -920,10 +919,7 @@ def child_curl_v4(host_dictionary, offset=5):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", interface, drop_pc)
         update_influx(results, future)
         tt3 = time.time()
-        function_logger.debug("child_curl_v4 - " + label + " -"
-                    " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
-                    " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
-                    " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
+        function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -934,6 +930,11 @@ def child_curl_v4(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
+
+        # manual garbage collection for multithreadded thing
+        if t.hour in {4, 8, 12, 16, 20, 0}:
+            gc.collect()
+
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: guess comit to fix timing thing
         if 29 > time_to_sleep > 0: # guess comit to fix timing thing
@@ -946,7 +947,6 @@ def child_curl_v4(host_dictionary, offset=5):
 
 def child_icmp_ping_v6(host_dictionary, offset=10):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "icmp_ping_v6"
     function_logger.debug(host_dictionary)
     results = ""
@@ -995,22 +995,22 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 if "100%" in str(e.output.splitlines()[-2]):
                     drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 else:
-                    function_logger.warning("child_icmp_ping_v6 in in " + str(e.output.splitlines()[-2]))
-                    function_logger.warning("child_icmp_ping_v6 in in " + label + "- Unexpected error:" + str(e.output))
-                    function_logger.warning("child_icmp_ping_v6 in in cmd " + str(e.cmd))
-                    function_logger.warning("child_icmp_ping_v6 in in return " + str(e.returncode))
-                    function_logger.warning("child_icmp_ping_v6 in in output " + str(e.output))
+                    function_logger.warning("in in %s" % str(e.output.splitlines()[-2]))
+                    function_logger.warning("in in %s - Unexpected error: %s" % (label, str(e.output)))
+                    function_logger.warning("in in cmd %s" % str(e.cmd))
+                    function_logger.warning("in in return %s" % str(e.returncode))
+                    function_logger.warning("in in output %s" % str(e.output))
             except Exception as e:
                 drop_pc = 100
-                function_logger.error("child_icmp_ping_v6 in " + label + "- something went bad sending to doing icmp ping v6 inside")
-                function_logger.error("child_icmp_ping_v6 in " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.error("child_icmp_ping_v6 in " + label + "- Unexpected error:" + str(e))
-                function_logger.error("child_icmp_ping_v6 in " + label + "- TRACEBACK=" + str(traceback.format_exc()))
+                function_logger.error("%s- something went bad sending to doing icmp ping v4 inside")
+                function_logger.error("%s- Unexpected error:%s" % (label, str(sys.exc_info()[0])))
+                function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
+                function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         except Exception as e:
-            function_logger.error("child_icmp_ping_v6 " + label + "- something went bad sending to doing icmp ping v6")
-            function_logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
-            function_logger.error("child_icmp_ping_v6 " + label + "- Unexpected error:" + str(e))
-            function_logger.error("child_icmp_ping_v6 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
+            function_logger.error("- something went bad sending to InfluxDB")
+            function_logger.error("%s- Unexpected error:%s" % (label, str(sys.exc_info()[0])))
+            function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
+            function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
@@ -1018,10 +1018,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, str(drop_pc))
         update_influx(results, future)
         tt3 = time.time()
-        function_logger.debug("child_icmp_ping_v6 - " + label + " -"
-                     " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
-                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
-                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
+        function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -1032,6 +1029,11 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
+
+        # manual garbage collection for multithreadded thing
+        if t.hour in {4, 8, 12, 16, 20, 0}:
+            gc.collect()
+
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             time.sleep(time_to_sleep)
@@ -1040,7 +1042,6 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
 
 def child_icmp_ping_v4(host_dictionary, offset=10):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "icmp_ping_v4"
     function_logger.debug(host_dictionary)
     results = ""
@@ -1088,22 +1089,22 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 if "100%" in str(e.output.splitlines()[-2]):
                     drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[5].replace("%", ""))
                 else:
-                    function_logger.warning("child_icmp_ping_v4 in in " + str(e.output.splitlines()[-2]))
-                    function_logger.warning("child_icmp_ping_v4 in in " + label + "- Unexpected error:" + str(e.output))
-                    function_logger.warning("child_icmp_ping_v4 in in cmd " + str(e.cmd))
-                    function_logger.warning("child_icmp_ping_v4 in in return " + str(e.returncode))
-                    function_logger.warning("child_icmp_ping_v4 in in output " + str(e.output))
+                    function_logger.warning("in in %s" % str(e.output.splitlines()[-2]))
+                    function_logger.warning("in in %s - Unexpected error: %s" % (label, str(e.output)))
+                    function_logger.warning("in in cmd %s" % str(e.cmd))
+                    function_logger.warning("in in return %s" % str(e.returncode))
+                    function_logger.warning("in in output %s" % str(e.output))
             except Exception as e:
                 drop_pc = 100
-                function_logger.error("child_icmp_ping_v4 in" + label + "- something went bad sending to doing icmp ping v4 inside")
-                function_logger.error("child_icmp_ping_v4 in" + label + "- Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.error("child_icmp_ping_v4 in" + label + "- Unexpected error:" + str(e))
-                function_logger.error("child_icmp_ping_v4 in" + label + "- TRACEBACK=" + str(traceback.format_exc()))
+                function_logger.error("%s- something went bad sending to doing icmp ping v4 inside")
+                function_logger.error("%s- Unexpected error:%s" % (label, str(sys.exc_info()[0])))
+                function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
+                function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         except Exception as e:
-            function_logger.error("child_icmp_ping_v4 " + label + "- something went bad sending to InfluxDB")
-            function_logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(sys.exc_info()[0]))
-            function_logger.error("child_icmp_ping_v4 " + label + "- Unexpected error:" + str(e))
-            function_logger.error("child_icmp_ping_v4 " + label + "- TRACEBACK=" + str(traceback.format_exc()))
+            function_logger.error("- something went bad sending to InfluxDB")
+            function_logger.error("%s- Unexpected error:%s" % (label, str(sys.exc_info()[0])))
+            function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
+            function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         tt2 = time.time()
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
@@ -1111,10 +1112,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, drop_pc)
         update_influx(results, future)
         tt3 = time.time()
-        function_logger.debug("child_icmp_ping_v4 - " + label + " -"
-                     " tt1-tt2=" + str("{:.2f}".format(float(tt2 - tt1))) +
-                     " tt2-tt3=" + str("{:.2f}".format(float(tt3 - tt2))) +
-                     " tt1-tt3= " + str("{:.2f}".format(float(tt3 - tt1))))
+        function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
         if t.second < 29:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -1125,6 +1123,11 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
+
+        # manual garbage collection for multithreadded thing
+        if t.hour in {4, 8, 12, 16, 20, 0}:
+            gc.collect()
+
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             time.sleep(time_to_sleep)
@@ -1464,7 +1467,6 @@ def child_udp_ping_v6(host_dictionary, offset=10):
 
 def child_udp_ping_v4(host_dictionary, offset=10):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "udp_ping_v4"
     function_logger.debug(host_dictionary)
     results = ""
