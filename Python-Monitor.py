@@ -767,6 +767,7 @@ def child_curl_v6(host_dictionary, offset=5):
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
                 ####################################################################################################################################
+                function_logger.critical("doing_garbage_collection")
                 gc.collect()
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
@@ -944,6 +945,7 @@ def child_curl_v4(host_dictionary, offset=5):
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
                 ####################################################################################################################################
+                function_logger.critical("doing_garbage_collection")
                 gc.collect()
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
@@ -1054,6 +1056,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
                 ####################################################################################################################################
+                function_logger.critical("doing_garbage_collection")
                 gc.collect()
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
@@ -1161,6 +1164,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
                 ####################################################################################################################################
+                function_logger.critical("doing_garbage_collection")
                 gc.collect()
                 all_objects = muppy.get_objects()
                 sum1 = summary.summarize(all_objects)
