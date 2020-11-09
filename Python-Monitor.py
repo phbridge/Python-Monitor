@@ -66,6 +66,7 @@ import datetime
 import subprocess
 import inspect
 import gc
+from pympler import muppy, summary
 
 FLASK_HOST = credentials.FLASK_HOST
 FLASK_PORT = credentials.FLASK_PORT
@@ -96,7 +97,7 @@ def process_hosts_in_serial():
 
 def process_hosts_in_parallel():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-    function_function_logger.info("----------- Processing Parallel -----------")
+    function_logger.info("----------- Processing Parallel -----------")
     results = ""
     t1 = time.time()
     with Pool(processes=32) as pool:
@@ -140,7 +141,6 @@ def process_hosts_in_parallel():
 
 def dnspingipv4(host_dictionary):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     print(host_dictionary)
     results = ""
     results += "NOT YET IMPLEMENTED"
@@ -149,7 +149,6 @@ def dnspingipv4(host_dictionary):
 
 def udppingipv4(host_dictionary):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     print(host_dictionary)
     results = ""
     results += "NOT YET IMPLEMENTED"
@@ -158,7 +157,6 @@ def udppingipv4(host_dictionary):
 
 def tcppingipv4(host_dictionary):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     print(host_dictionary)
     results = ""
     results += "NOT YET IMPLEMENTED"
@@ -167,7 +165,6 @@ def tcppingipv4(host_dictionary):
 
 def dnspingipv6(host_dictionary):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     print(host_dictionary)
     results = ""
     results += "NOT YET IMPLEMENTED"
@@ -176,7 +173,6 @@ def dnspingipv6(host_dictionary):
 
 def udppingipv6(host_dictionary):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     print(host_dictionary)
     results = ""
     results += "NOT YET IMPLEMENTED"
@@ -185,7 +181,6 @@ def udppingipv6(host_dictionary):
 
 def tcppingipv6(host_dictionary):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     print(host_dictionary)
     results = ""
     results += "NOT YET IMPLEMENTED"
@@ -194,7 +189,6 @@ def tcppingipv6(host_dictionary):
 
 def pingipv4(host_dictionary, influx_results=True):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "pingv4"
     function_logger.debug(host_dictionary)
     results = ""
@@ -772,7 +766,18 @@ def child_curl_v6(host_dictionary, offset=5):
         # manual garbage collection for multithreadded thing
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
+                ####################################################################################################################################
                 gc.collect()
+                all_objects = muppy.get_objects()
+                sum1 = summary.summarize(all_objects)
+                # Prints out a summary of the large objects
+                summary.print_(sum1)
+                # Get references to certain types of objects such as dataframe
+                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
+                for d in dataframes:
+                    function_logger.critical(d.columns.values)
+                    function_logger.critical(len(d))
+                ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: # guess comit to fix timing thing
@@ -938,7 +943,18 @@ def child_curl_v4(host_dictionary, offset=5):
 
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
+                ####################################################################################################################################
                 gc.collect()
+                all_objects = muppy.get_objects()
+                sum1 = summary.summarize(all_objects)
+                # Prints out a summary of the large objects
+                summary.print_(sum1)
+                # Get references to certain types of objects such as dataframe
+                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
+                for d in dataframes:
+                    function_logger.critical(d.columns.values)
+                    function_logger.critical(len(d))
+                ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: guess comit to fix timing thing
@@ -1037,7 +1053,19 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         # manual garbage collection for multithreadded thing
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
+                ####################################################################################################################################
                 gc.collect()
+                all_objects = muppy.get_objects()
+                sum1 = summary.summarize(all_objects)
+                # Prints out a summary of the large objects
+                summary.print_(sum1)
+                # Get references to certain types of objects such as dataframe
+                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
+                for d in dataframes:
+                    function_logger.critical(d.columns.values)
+                    function_logger.critical(len(d))
+                ####################################################################################################################################
+
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             time.sleep(time_to_sleep)
@@ -1132,7 +1160,18 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         # manual garbage collection for multithreadded thing
         if t.minute == 0:
             if t.hour in {4, 8, 12, 16, 20, 0}:
+                ####################################################################################################################################
                 gc.collect()
+                all_objects = muppy.get_objects()
+                sum1 = summary.summarize(all_objects)
+                # Prints out a summary of the large objects
+                summary.print_(sum1)
+                # Get references to certain types of objects such as dataframe
+                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
+                for d in dataframes:
+                    function_logger.critical(d.columns.values)
+                    function_logger.critical(len(d))
+                ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
@@ -1594,7 +1633,6 @@ def child_udp_ping_v4(host_dictionary, offset=10):
 
 def master_curl_v6_probe_stats():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     try:
         child_thread_curl_v6 = []
         for key in HOSTS_DB['curl_v6'].keys():
