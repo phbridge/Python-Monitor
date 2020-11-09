@@ -67,6 +67,8 @@ import subprocess
 import inspect
 import gc
 from pympler import muppy, summary
+import pandas as pd
+
 
 FLASK_HOST = credentials.FLASK_HOST
 FLASK_PORT = credentials.FLASK_PORT
@@ -82,7 +84,7 @@ flask_app = Flask('router_nat_stats')
 
 def process_hosts_in_serial():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-    function_function_logger.info("----------- Processing Serial -----------")
+    function_function.info("----------- Processing Serial -----------")
     results = ""
     for host in HOSTS_DB['pingICMPv4'].keys():
         results += pingipv4(host_dictionary=HOSTS_DB['pingICMPv4'][host])
