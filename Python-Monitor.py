@@ -66,7 +66,7 @@ import datetime
 import subprocess
 import inspect
 import gc
-from pympler import muppy, summary
+from pympler import muppy, summary, tracker
 import pandas as pd
 
 
@@ -775,11 +775,8 @@ def child_curl_v6(host_dictionary, offset=5):
                 sum1 = summary.summarize(all_objects)
                 # Prints out a summary of the large objects
                 summary.print_(sum1)
-                # Get references to certain types of objects such as dataframe
-                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
-                for d in dataframes:
-                    function_logger.critical(d.columns.values)
-                    function_logger.critical(len(d))
+                for line in summary.format_(sum1):
+                    function_logger.critical(line)
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -953,11 +950,8 @@ def child_curl_v4(host_dictionary, offset=5):
                 sum1 = summary.summarize(all_objects)
                 # Prints out a summary of the large objects
                 summary.print_(sum1)
-                # Get references to certain types of objects such as dataframe
-                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
-                for d in dataframes:
-                    function_logger.critical(d.columns.values)
-                    function_logger.critical(len(d))
+                for line in summary.format_(sum1):
+                    function_logger.critical(line)
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -1064,11 +1058,8 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 sum1 = summary.summarize(all_objects)
                 # Prints out a summary of the large objects
                 summary.print_(sum1)
-                # Get references to certain types of objects such as dataframe
-                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
-                for d in dataframes:
-                    function_logger.critical(d.columns.values)
-                    function_logger.critical(len(d))
+                for line in summary.format_(sum1):
+                    function_logger.critical(line)
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -1172,11 +1163,8 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 sum1 = summary.summarize(all_objects)
                 # Prints out a summary of the large objects
                 summary.print_(sum1)
-                # Get references to certain types of objects such as dataframe
-                dataframes = [ao for ao in all_objects if isinstance(ao, pd.DataFrame)]
-                for d in dataframes:
-                    function_logger.critical(d.columns.values)
-                    function_logger.critical(len(d))
+                for line in summary.format_(sum1):
+                    function_logger.critical(line)
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
