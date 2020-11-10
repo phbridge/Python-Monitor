@@ -616,7 +616,6 @@ def child_curl_v6(host_dictionary, offset=5):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "curl_v6"
     function_logger.debug(host_dictionary)
-    results = ""
     url = host_dictionary['address']
     count = int(host_dictionary['count'])
     timeout = int(host_dictionary['timeout'])
@@ -738,6 +737,7 @@ def child_curl_v6(host_dictionary, offset=5):
         if fail > 0:
             drop_pc += fail * (100 / count)
         tt2 = time.time()
+        results = ""
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", interface, str("{:.2f}".format(float(curl_connect_average)*1000)))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", interface, str("{:.2f}".format(float(curl_connect_min)*1000)))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMax", interface, str("{:.2f}".format(float(curl_connect_max)*1000)))
@@ -793,7 +793,6 @@ def child_curl_v4(host_dictionary, offset=5):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "curl_v4"
     function_logger.debug(host_dictionary)
-    results = ""
     url = host_dictionary['address']
     count = int(host_dictionary['count'])
     timeout = int(host_dictionary['timeout'])
@@ -912,6 +911,7 @@ def child_curl_v4(host_dictionary, offset=5):
         if fail > 0:
             drop_pc += fail * (100 / count)
         tt2 = time.time()
+        results = ""
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", interface, str("{:.2f}".format(float(curl_connect_average) * 1000)))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", interface, str("{:.2f}".format(float(curl_connect_min) * 1000)))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMax", interface, str("{:.2f}".format(float(curl_connect_max) * 1000)))
@@ -968,7 +968,6 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "icmp_ping_v6"
     function_logger.debug(host_dictionary)
-    results = ""
     hostname = host_dictionary['address']
     count = int(host_dictionary['count'])
     timeout = int(host_dictionary['timeout'])
@@ -1031,6 +1030,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
             function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
             function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         tt2 = time.time()
+        results = ""
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", interface, str("{:.2f}".format(float(latency_max))))
@@ -1073,7 +1073,6 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "icmp_ping_v4"
     function_logger.debug(host_dictionary)
-    results = ""
     hostname = host_dictionary['address']
     count = int(host_dictionary['count'])
     timeout = int(host_dictionary['timeout'])
@@ -1135,6 +1134,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
             function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         tt2 = time.time()
+        results = ""
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
         results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", interface, str("{:.2f}".format(float(latency_max))))
