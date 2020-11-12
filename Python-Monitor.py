@@ -66,7 +66,7 @@ import datetime
 import subprocess
 import inspect
 import gc
-from pympler import muppy, summary, tracker
+from pympler import muppy, summary, tracker, asizeof
 import pandas as pd
 
 
@@ -321,265 +321,258 @@ def pingipv6(host_dictionary, influx_results=True):
     results += 'ICMPv6_drop{host="%s",label="%s",tos="%s",dns="%s",group="%s"} %s\n' % (hostname, label, tos, dns, group, drop_pc)
     return results
 
-
-def curlv4(host_dictionary, influx_results=True):
-    function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
-    probe_name = "curlv4"
-    function_logger.debug(host_dictionary)
-    results = ""
-    url = host_dictionary['address']
-    count = int(host_dictionary['count'])
-    timeout = int(host_dictionary['timeout'])
-    label = host_dictionary['label']
-    dns = host_dictionary['DNS']
-    group = host_dictionary['group']
-
-    time.sleep(random.uniform(0, 1) / timeout)
-    function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-    curl_lookup_average = -1
-    curl_connect_average = -1
-    curl_app_connect_average = -1
-    curl_pre_transfer_average = -1
-    curl_total_transfer_average = -1
-
-    curl_lookup_min = -1
-    curl_connect_min = -1
-    curl_app_connect_min = -1
-    curl_pre_transfer_min = -1
-    curl_total_transfer_min = -1
-
-    curl_connect_max = -1
-    curl_lookup_max = -1
-    curl_app_connect_max = -1
-    curl_pre_transfer_max = -1
-    curl_total_transfer_max = -1
-
-    success = 0
-    fail = 0
-    drop_pc = 0
-
-    for x in range(count):
-        try:
-            c = pycurl.Curl()
-            c.setopt(c.IPRESOLVE, c.IPRESOLVE_V4)
-            c.setopt(c.TIMEOUT, timeout)
-            c.setopt(c.URL, url)
-            c.setopt(c.NOBODY, 1)
-            c.perform()
-            if c.getinfo(c.HTTP_CODE) == 200:
-                success += 1
-                if curl_connect_max < c.getinfo(c.CONNECT_TIME):
-                    curl_connect_max = c.getinfo(c.CONNECT_TIME)
-                if curl_lookup_max < c.getinfo(c.NAMELOOKUP_TIME):
-                    curl_lookup_max = c.getinfo(c.NAMELOOKUP_TIME)
-                if curl_app_connect_max < c.getinfo(c.APPCONNECT_TIME):
-                    curl_app_connect_max = c.getinfo(c.APPCONNECT_TIME)
-                if curl_pre_transfer_max < c.getinfo(c.PRETRANSFER_TIME):
-                    curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
-                if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
-                    curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
-                if curl_connect_min > c.getinfo(c.CONNECT_TIME):
-                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
-                if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
-                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
-                if curl_app_connect_min < c.getinfo(c.APPCONNECT_TIME):
-                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
-                if curl_pre_transfer_min > c.getinfo(c.PRETRANSFER_TIME):
-                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
-                if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
-                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-                if curl_connect_min == -1:
-                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
-                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
-                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
-                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
-                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-                if not curl_connect_average == -1:
-                    curl_connect_average += c.getinfo(c.CONNECT_TIME)
-                    curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
-                    curl_app_connect_average += c.getinfo(c.APPCONNECT_TIME)
-                    curl_pre_transfer_average += c.getinfo(c.PRETRANSFER_TIME)
-                    curl_total_transfer_average += c.getinfo(c.TOTAL_TIME)
-                else:
-                    curl_connect_average = c.getinfo(c.CONNECT_TIME)
-                    curl_lookup_average = c.getinfo(c.NAMELOOKUP_TIME)
-                    curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
-                    curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
-                    curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
-                c.close()
-                time.sleep(timeout)
-            else:
-                fail += 1
-        except\
-                pycurl.error as e:
-            function_logger.error("curlv4 - catching pycurl.error")
-            function_logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-            function_logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
-            function_logger.error("curlv4 - Unexpected error:" + str(e))
-            function_logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
-            fail += 1
-            c.close()
-        except Exception as e:
-            function_logger.error("curlv4 - Curl'ing to host")
-            function_logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
-            function_logger.error("curlv4 - Unexpected error:" + str(e))
-            function_logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
-            fail += 1
-            c.close()
-    if success > 0:
-        curl_connect_average = curl_connect_average / success
-        curl_lookup_average = curl_lookup_average / success
-        curl_pre_transfer_average = curl_pre_transfer_average / success
-        # curl_start_transfer_average = curl_start_transfer_average / success
-        curl_total_transfer_average = curl_total_transfer_average / success
-    if fail > 0:
-        drop_pc += fail * (100 / count)
-    results += 'curlv4_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_average)*1000)))
-    results += 'curlv4_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_min)*1000)))
-    results += 'curlv4_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_max)*1000)))
-    results += 'curlv4_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_average)*1000)))
-    results += 'curlv4_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_min)*1000)))
-    results += 'curlv4_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_max)*1000)))
-    results += 'curlv4_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
-    results += 'curlv4_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
-    results += 'curlv4_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
-    results += 'curlv4_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
-    results += 'curlv4_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
-    results += 'curlv4_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
-    results += 'curlv4_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
-    return results
-
-
-def curlv6(host_dictionary):
-    function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
-    probe_name = "curlv6"
-    measurement_name = "N/A"
-    function_logger.debug(host_dictionary)
-    results = ""
-    url = host_dictionary['address']
-    count = int(host_dictionary['count'])
-    timeout = int(host_dictionary['timeout'])
-    label = host_dictionary['label']
-    dns = host_dictionary['DNS']
-    group = host_dictionary['group']
-
-    time.sleep(random.uniform(0, 1) / timeout)
-    function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-    curl_lookup_average = -1
-    curl_connect_average = -1
-    curl_app_connect_average = -1
-    curl_pre_transfer_average = -1
-    curl_total_transfer_average = -1
-    curl_lookup_min = -1
-    curl_connect_min = -1
-    curl_app_connect_min = -1
-    curl_pre_transfer_min = -1
-    curl_total_transfer_min = -1
-    curl_connect_max = -1
-    curl_lookup_max = -1
-    curl_app_connect_max = -1
-    curl_pre_transfer_max = -1
-    curl_total_transfer_max = -1
-
-    success = 0
-    fail = 0
-    drop_pc = 0
-
-    for x in range(count):
-        try:
-            c = pycurl.Curl()
-            c.setopt(c.IPRESOLVE, c.IPRESOLVE_V6)
-            c.setopt(c.TIMEOUT, timeout)
-            c.setopt(c.URL, url)
-            c.setopt(c.NOBODY, 1)
-            c.perform()
-            if c.getinfo(c.HTTP_CODE) == 200:
-                success += 1
-                if curl_connect_max < c.getinfo(c.CONNECT_TIME):
-                    curl_connect_max = c.getinfo(c.CONNECT_TIME)
-                if curl_lookup_max < c.getinfo(c.NAMELOOKUP_TIME):
-                    curl_lookup_max = c.getinfo(c.NAMELOOKUP_TIME)
-                if curl_app_connect_max < c.getinfo(c.APPCONNECT_TIME):
-                    curl_app_connect_max = c.getinfo(c.APPCONNECT_TIME)
-                if curl_pre_transfer_max < c.getinfo(c.PRETRANSFER_TIME):
-                    curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
-                if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
-                    curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
-
-                if curl_connect_min > c.getinfo(c.CONNECT_TIME):
-                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
-                if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
-                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
-                if curl_app_connect_min < c.getinfo(c.APPCONNECT_TIME):
-                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
-                if curl_pre_transfer_min > c.getinfo(c.PRETRANSFER_TIME):
-                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
-                if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
-                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
-                if curl_connect_min == -1:
-                    curl_connect_min = c.getinfo(c.CONNECT_TIME)
-                    curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
-                    curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
-                    curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
-                    curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
-                if not curl_connect_average == -1:
-                    curl_connect_average += c.getinfo(c.CONNECT_TIME)
-                    curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
-                    curl_app_connect_average += c.getinfo(c.APPCONNECT_TIME)
-                    curl_pre_transfer_average += c.getinfo(c.PRETRANSFER_TIME)
-                    curl_total_transfer_average += c.getinfo(c.TOTAL_TIME)
-                else:
-                    curl_connect_average = c.getinfo(c.CONNECT_TIME)
-                    curl_lookup_average = c.getinfo(c.NAMELOOKUP_TIME)
-                    curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
-                    curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
-                    curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
-                c.close()
-                time.sleep(timeout)
-            else:
-                fail += 1
-        except pycurl.error as e:
-            function_logger.error("curlv6 - catching pycurl.error")
-            function_logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
-            function_logger.error("curlv6 - Unexpected error:" + str(sys.exc_info()[0]))
-            function_logger.error("curlv6 - Unexpected error:" + str(e))
-            function_logger.error("curlv6 - TRACEBACK=" + str(traceback.format_exc()))
-            fail += 1
-            c.close()
-        except Exception as e:
-            function_logger.error("curlv6 - Curl'ing to host")
-            function_logger.error("curlv6 - Unexpected error:" + str(sys.exc_info()[0]))
-            function_logger.error("curlv6 - Unexpected error:" + str(e))
-            function_logger.error("curlv6 - TRACEBACK=" + str(traceback.format_exc()))
-            fail += 1
-            c.close()
-
-    if success > 0:
-        curl_connect_average = curl_connect_average / success
-        curl_lookup_average = curl_lookup_average / success
-        curl_pre_transfer_average = curl_pre_transfer_average / success
-        curl_total_transfer_average = curl_total_transfer_average / success
-    if fail > 0:
-        drop_pc += fail * (100 / count)
-
-    results += 'curlv6_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_average)*1000)))
-    results += 'curlv6_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_min)*1000)))
-    results += 'curlv6_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_max)*1000)))
-    results += 'curlv6_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_average)*1000)))
-    results += 'curlv6_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_min)*1000)))
-    results += 'curlv6_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_max)*1000)))
-    results += 'curlv6_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_average)*1000)))
-    results += 'curlv6_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_min)*1000)))
-    results += 'curlv6_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_max)*1000)))
-    results += 'curlv6_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_average)*1000)))
-    results += 'curlv6_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_min)*1000)))
-    results += 'curlv6_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_max)*1000)))
-    results += 'curlv6_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
-    return results
+#
+# def curlv4(host_dictionary, influx_results=True):
+#     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
+#     probe_name = "curlv4"
+#     function_logger.debug(host_dictionary)
+#     results = ""
+#     url = host_dictionary['address']
+#     count = int(host_dictionary['count'])
+#     timeout = int(host_dictionary['timeout'])
+#     label = host_dictionary['label']
+#     dns = host_dictionary['DNS']
+#     group = host_dictionary['group']
+#     time.sleep(random.uniform(0, 1) / timeout)
+#     function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+#     curl_lookup_average = -1
+#     curl_connect_average = -1
+#     curl_app_connect_average = -1
+#     curl_pre_transfer_average = -1
+#     curl_total_transfer_average = -1
+#     curl_lookup_min = -1
+#     curl_connect_min = -1
+#     curl_app_connect_min = -1
+#     curl_pre_transfer_min = -1
+#     curl_total_transfer_min = -1
+#     curl_connect_max = -1
+#     curl_lookup_max = -1
+#     curl_app_connect_max = -1
+#     curl_pre_transfer_max = -1
+#     curl_total_transfer_max = -1
+#     success = 0
+#     fail = 0
+#     drop_pc = 0
+#     for x in range(count):
+#         try:
+#             c = pycurl.Curl()
+#             c.setopt(c.IPRESOLVE, c.IPRESOLVE_V4)
+#             c.setopt(c.TIMEOUT, timeout)
+#             c.setopt(c.URL, url)
+#             c.setopt(c.NOBODY, 1)
+#             c.perform()
+#             if c.getinfo(c.HTTP_CODE) == 200:
+#                 success += 1
+#                 if curl_connect_max < c.getinfo(c.CONNECT_TIME):
+#                     curl_connect_max = c.getinfo(c.CONNECT_TIME)
+#                 if curl_lookup_max < c.getinfo(c.NAMELOOKUP_TIME):
+#                     curl_lookup_max = c.getinfo(c.NAMELOOKUP_TIME)
+#                 if curl_app_connect_max < c.getinfo(c.APPCONNECT_TIME):
+#                     curl_app_connect_max = c.getinfo(c.APPCONNECT_TIME)
+#                 if curl_pre_transfer_max < c.getinfo(c.PRETRANSFER_TIME):
+#                     curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
+#                 if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
+#                     curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
+#                 if curl_connect_min > c.getinfo(c.CONNECT_TIME):
+#                     curl_connect_min = c.getinfo(c.CONNECT_TIME)
+#                 if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
+#                     curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+#                 if curl_app_connect_min < c.getinfo(c.APPCONNECT_TIME):
+#                     curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+#                 if curl_pre_transfer_min > c.getinfo(c.PRETRANSFER_TIME):
+#                     curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+#                 if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
+#                     curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+#                 if curl_connect_min == -1:
+#                     curl_connect_min = c.getinfo(c.CONNECT_TIME)
+#                     curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+#                     curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+#                     curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+#                     curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+#                 if not curl_connect_average == -1:
+#                     curl_connect_average += c.getinfo(c.CONNECT_TIME)
+#                     curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
+#                     curl_app_connect_average += c.getinfo(c.APPCONNECT_TIME)
+#                     curl_pre_transfer_average += c.getinfo(c.PRETRANSFER_TIME)
+#                     curl_total_transfer_average += c.getinfo(c.TOTAL_TIME)
+#                 else:
+#                     curl_connect_average = c.getinfo(c.CONNECT_TIME)
+#                     curl_lookup_average = c.getinfo(c.NAMELOOKUP_TIME)
+#                     curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
+#                     curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
+#                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
+#                 c.close()
+#                 time.sleep(timeout)
+#             else:
+#                 fail += 1
+#         except pycurl.error as e:
+#             function_logger.error("curlv4 - catching pycurl.error")
+#             function_logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+#             function_logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
+#             function_logger.error("curlv4 - Unexpected error:" + str(e))
+#             function_logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
+#             fail += 1
+#             c.close()
+#         except Exception as e:
+#             function_logger.error("curlv4 - Curl'ing to host")
+#             function_logger.error("curlv4 - Unexpected error:" + str(sys.exc_info()[0]))
+#             function_logger.error("curlv4 - Unexpected error:" + str(e))
+#             function_logger.error("curlv4 - TRACEBACK=" + str(traceback.format_exc()))
+#             fail += 1
+#             c.close()
+#     if success > 0:
+#         curl_connect_average = curl_connect_average / success
+#         curl_lookup_average = curl_lookup_average / success
+#         curl_pre_transfer_average = curl_pre_transfer_average / success
+#         # curl_start_transfer_average = curl_start_transfer_average / success
+#         curl_total_transfer_average = curl_total_transfer_average / success
+#     if fail > 0:
+#         drop_pc += fail * (100 / count)
+#     results += 'curlv4_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_average)*1000)))
+#     results += 'curlv4_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_min)*1000)))
+#     results += 'curlv4_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_connect_max)*1000)))
+#     results += 'curlv4_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_average)*1000)))
+#     results += 'curlv4_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_min)*1000)))
+#     results += 'curlv4_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_lookup_max)*1000)))
+#     results += 'curlv4_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
+#     results += 'curlv4_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
+#     results += 'curlv4_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
+#     results += 'curlv4_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
+#     results += 'curlv4_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
+#     results += 'curlv4_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
+#     results += 'curlv4_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
+#     return results
+#
+#
+# def curlv6(host_dictionary):
+#     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
+#
+#     probe_name = "curlv6"
+#     measurement_name = "N/A"
+#     function_logger.debug(host_dictionary)
+#     results = ""
+#     url = host_dictionary['address']
+#     count = int(host_dictionary['count'])
+#     timeout = int(host_dictionary['timeout'])
+#     label = host_dictionary['label']
+#     dns = host_dictionary['DNS']
+#     group = host_dictionary['group']
+#
+#     time.sleep(random.uniform(0, 1) / timeout)
+#     function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+#     curl_lookup_average = -1
+#     curl_connect_average = -1
+#     curl_app_connect_average = -1
+#     curl_pre_transfer_average = -1
+#     curl_total_transfer_average = -1
+#     curl_lookup_min = -1
+#     curl_connect_min = -1
+#     curl_app_connect_min = -1
+#     curl_pre_transfer_min = -1
+#     curl_total_transfer_min = -1
+#     curl_connect_max = -1
+#     curl_lookup_max = -1
+#     curl_app_connect_max = -1
+#     curl_pre_transfer_max = -1
+#     curl_total_transfer_max = -1
+#
+#     success = 0
+#     fail = 0
+#     drop_pc = 0
+#
+#     for x in range(count):
+#         try:
+#             c = pycurl.Curl()
+#             c.setopt(c.IPRESOLVE, c.IPRESOLVE_V6)
+#             c.setopt(c.TIMEOUT, timeout)
+#             c.setopt(c.URL, url)
+#             c.setopt(c.NOBODY, 1)
+#             c.perform()
+#             if c.getinfo(c.HTTP_CODE) == 200:
+#                 success += 1
+#                 if curl_connect_max < c.getinfo(c.CONNECT_TIME):
+#                     curl_connect_max = c.getinfo(c.CONNECT_TIME)
+#                 if curl_lookup_max < c.getinfo(c.NAMELOOKUP_TIME):
+#                     curl_lookup_max = c.getinfo(c.NAMELOOKUP_TIME)
+#                 if curl_app_connect_max < c.getinfo(c.APPCONNECT_TIME):
+#                     curl_app_connect_max = c.getinfo(c.APPCONNECT_TIME)
+#                 if curl_pre_transfer_max < c.getinfo(c.PRETRANSFER_TIME):
+#                     curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
+#                 if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
+#                     curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
+#
+#                 if curl_connect_min > c.getinfo(c.CONNECT_TIME):
+#                     curl_connect_min = c.getinfo(c.CONNECT_TIME)
+#                 if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
+#                     curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+#                 if curl_app_connect_min < c.getinfo(c.APPCONNECT_TIME):
+#                     curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+#                 if curl_pre_transfer_min > c.getinfo(c.PRETRANSFER_TIME):
+#                     curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+#                 if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
+#                     curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+#
+#                 if curl_connect_min == -1:
+#                     curl_connect_min = c.getinfo(c.CONNECT_TIME)
+#                     curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
+#                     curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
+#                     curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
+#                     curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
+#
+#                 if not curl_connect_average == -1:
+#                     curl_connect_average += c.getinfo(c.CONNECT_TIME)
+#                     curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
+#                     curl_app_connect_average += c.getinfo(c.APPCONNECT_TIME)
+#                     curl_pre_transfer_average += c.getinfo(c.PRETRANSFER_TIME)
+#                     curl_total_transfer_average += c.getinfo(c.TOTAL_TIME)
+#                 else:
+#                     curl_connect_average = c.getinfo(c.CONNECT_TIME)
+#                     curl_lookup_average = c.getinfo(c.NAMELOOKUP_TIME)
+#                     curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
+#                     curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
+#                     curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
+#                 c.close()
+#                 time.sleep(timeout)
+#             else:
+#                 fail += 1
+#         except pycurl.error as e:
+#             function_logger.error("curlv6 - catching pycurl.error")
+#             function_logger.error("sending curl label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
+#             function_logger.error("curlv6 - Unexpected error:" + str(sys.exc_info()[0]))
+#             function_logger.error("curlv6 - Unexpected error:" + str(e))
+#             function_logger.error("curlv6 - TRACEBACK=" + str(traceback.format_exc()))
+#             fail += 1
+#             c.close()
+#         except Exception as e:
+#             function_logger.error("curlv6 - Curl'ing to host")
+#             function_logger.error("curlv6 - Unexpected error:" + str(sys.exc_info()[0]))
+#             function_logger.error("curlv6 - Unexpected error:" + str(e))
+#             function_logger.error("curlv6 - TRACEBACK=" + str(traceback.format_exc()))
+#             fail += 1
+#             c.close()
+#
+#     if success > 0:
+#         curl_connect_average = curl_connect_average / success
+#         curl_lookup_average = curl_lookup_average / success
+#         curl_pre_transfer_average = curl_pre_transfer_average / success
+#         curl_total_transfer_average = curl_total_transfer_average / success
+#     if fail > 0:
+#         drop_pc += fail * (100 / count)
+#
+#     results += 'curlv6_Connect_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_average)*1000)))
+#     results += 'curlv6_Connect_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_min)*1000)))
+#     results += 'curlv6_Connect_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_connect_max)*1000)))
+#     results += 'curlv6_Lookup_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_average)*1000)))
+#     results += 'curlv6_Lookup_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_min)*1000)))
+#     results += 'curlv6_Lookup_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_lookup_max)*1000)))
+#     results += 'curlv6_pre_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_average)*1000)))
+#     results += 'curlv6_pre_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_min)*1000)))
+#     results += 'curlv6_pre_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_pre_transfer_max)*1000)))
+#     results += 'curlv6_total_transfer_Avg{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_average)*1000)))
+#     results += 'curlv6_total_transfer_Min{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_min)*1000)))
+#     results += 'curlv6_total_transfer_Max{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, str("{:.4f}".format(float(curl_total_transfer_max)*1000)))
+#     results += 'curlv6_drop{host="%s",label="%s",dns="%s",group="%s"} %s\n' % (url, label, dns, group, drop_pc)
+#     return results
 
 
 @flask_app.route('/probe_stats')
@@ -679,7 +672,6 @@ def child_curl_v6(host_dictionary, offset=5):
                         curl_pre_transfer_max = c.getinfo(c.PRETRANSFER_TIME)
                     if curl_total_transfer_max < c.getinfo(c.TOTAL_TIME):
                         curl_total_transfer_max = c.getinfo(c.TOTAL_TIME)
-
                     if curl_connect_min > c.getinfo(c.CONNECT_TIME):
                         curl_connect_min = c.getinfo(c.CONNECT_TIME)
                     if curl_lookup_min < c.getinfo(c.NAMELOOKUP_TIME):
@@ -690,14 +682,12 @@ def child_curl_v6(host_dictionary, offset=5):
                         curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
                     if curl_total_transfer_min > c.getinfo(c.TOTAL_TIME):
                         curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
                     if curl_connect_min == -1:
                         curl_connect_min = c.getinfo(c.CONNECT_TIME)
                         curl_lookup_min = c.getinfo(c.NAMELOOKUP_TIME)
                         curl_app_connect_min = c.getinfo(c.APPCONNECT_TIME)
                         curl_pre_transfer_min = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_min = c.getinfo(c.TOTAL_TIME)
-
                     if not curl_connect_average == -1:
                         curl_connect_average += c.getinfo(c.CONNECT_TIME)
                         curl_lookup_average += c.getinfo(c.NAMELOOKUP_TIME)
@@ -777,6 +767,9 @@ def child_curl_v6(host_dictionary, offset=5):
                 summary.print_(sum1)
                 for line in summary.format_(sum1):
                     function_logger.critical(line)
+
+                for name, obj in locals().items():
+                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -952,6 +945,9 @@ def child_curl_v4(host_dictionary, offset=5):
                 summary.print_(sum1)
                 for line in summary.format_(sum1):
                     function_logger.critical(line)
+
+                for name, obj in locals().items():
+                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -1060,6 +1056,9 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
                 summary.print_(sum1)
                 for line in summary.format_(sum1):
                     function_logger.critical(line)
+
+                for name, obj in locals().items():
+                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -1165,8 +1164,10 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
                 summary.print_(sum1)
                 for line in summary.format_(sum1):
                     function_logger.critical(line)
-                ####################################################################################################################################
 
+                for name, obj in locals().items():
+                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
+                ####################################################################################################################################
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             time.sleep(time_to_sleep)
@@ -1175,7 +1176,6 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
 
 def child_tcp_ping_v6(host_dictionary, offset=10):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "tcp_ping_v6"
     function_logger.debug(host_dictionary)
     results = ""
