@@ -756,20 +756,20 @@ def child_curl_v6(host_dictionary, offset=5):
             future += datetime.timedelta(seconds=90)
 
         # manual garbage collection for multithreadded thing
-        if t.minute == 0:
-            if t.hour in {4, 8, 12, 16, 20, 0}:
-                ####################################################################################################################################
-                function_logger.critical("doing_garbage_collection")
-                gc.collect()
-                all_objects = muppy.get_objects()
-                sum1 = summary.summarize(all_objects)
-                # Prints out a summary of the large objects
-                summary.print_(sum1)
-                for line in summary.format_(sum1):
-                    function_logger.critical(line)
-
-                for name, obj in locals().items():
-                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
+        # if t.minute == 0:
+        #     if t.hour in {4, 8, 12, 16, 20, 0}:
+        #         ####################################################################################################################################
+        #         function_logger.critical("doing_garbage_collection")
+        #         gc.collect()
+        #         all_objects = muppy.get_objects()
+        #         sum1 = summary.summarize(all_objects)
+        #         # Prints out a summary of the large objects
+        #         summary.print_(sum1)
+        #         for line in summary.format_(sum1):
+        #             function_logger.critical(line)
+        #
+        #         for name, obj in locals().items():
+        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -933,21 +933,21 @@ def child_curl_v4(host_dictionary, offset=5):
             future += datetime.timedelta(seconds=90)
 
         # manual garbage collection for multithreadded thing
-
-        if t.minute == 0:
-            if t.hour in {4, 8, 12, 16, 20, 0}:
-                ####################################################################################################################################
-                function_logger.critical("doing_garbage_collection")
-                gc.collect()
-                all_objects = muppy.get_objects()
-                sum1 = summary.summarize(all_objects)
-                # Prints out a summary of the large objects
-                summary.print_(sum1)
-                for line in summary.format_(sum1):
-                    function_logger.critical(line)
-
-                for name, obj in locals().items():
-                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
+        #
+        # if t.minute == 0:
+        #     if t.hour in {4, 8, 12, 16, 20, 0}:
+        #         ####################################################################################################################################
+        #         function_logger.critical("doing_garbage_collection")
+        #         gc.collect()
+        #         all_objects = muppy.get_objects()
+        #         sum1 = summary.summarize(all_objects)
+        #         # Prints out a summary of the large objects
+        #         summary.print_(sum1)
+        #         for line in summary.format_(sum1):
+        #             function_logger.critical(line)
+        #
+        #         for name, obj in locals().items():
+        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -1045,20 +1045,20 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
         # manual garbage collection for multithreadded thing
-        if t.minute == 0:
-            if t.hour in {4, 8, 12, 16, 20, 0}:
-                ####################################################################################################################################
-                function_logger.critical("doing_garbage_collection")
-                gc.collect()
-                all_objects = muppy.get_objects()
-                sum1 = summary.summarize(all_objects)
-                # Prints out a summary of the large objects
-                summary.print_(sum1)
-                for line in summary.format_(sum1):
-                    function_logger.critical(line)
-
-                for name, obj in locals().items():
-                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
+        # if t.minute == 0:
+        #     if t.hour in {4, 8, 12, 16, 20, 0}:
+        #         ####################################################################################################################################
+        #         function_logger.critical("doing_garbage_collection")
+        #         gc.collect()
+        #         all_objects = muppy.get_objects()
+        #         sum1 = summary.summarize(all_objects)
+        #         # Prints out a summary of the large objects
+        #         summary.print_(sum1)
+        #         for line in summary.format_(sum1):
+        #             function_logger.critical(line)
+        #
+        #         for name, obj in locals().items():
+        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
                 ####################################################################################################################################
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
@@ -1153,20 +1153,20 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             future += datetime.timedelta(seconds=90)
 
         # manual garbage collection for multithreadded thing
-        if t.minute == 0:
-            if t.hour in {4, 8, 12, 16, 20, 0}:
-                ####################################################################################################################################
-                function_logger.critical("doing_garbage_collection")
-                gc.collect()
-                all_objects = muppy.get_objects()
-                sum1 = summary.summarize(all_objects)
-                # Prints out a summary of the large objects
-                summary.print_(sum1)
-                for line in summary.format_(sum1):
-                    function_logger.critical(line)
-
-                for name, obj in locals().items():
-                    function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
+        # if t.minute == 0:
+        #     if t.hour in {4, 8, 12, 16, 20, 0}:
+        #         ####################################################################################################################################
+        #         function_logger.critical("doing_garbage_collection")
+        #         gc.collect()
+        #         all_objects = muppy.get_objects()
+        #         sum1 = summary.summarize(all_objects)
+        #         # Prints out a summary of the large objects
+        #         summary.print_(sum1)
+        #         for line in summary.format_(sum1):
+        #             function_logger.critical(line)
+        #
+        #         for name, obj in locals().items():
+        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
                 ####################################################################################################################################
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
