@@ -1691,39 +1691,38 @@ def update_influx(raw_string, timestamp):
         for each in raw_string.splitlines():
             string_to_upload += each + " " + timestamp_string + "\n"
         upload_to_influx_sessions = requests.session()
-        success = False
-        attempts = 0
-        attempt_error_array = []
-        while attempts < 5 and not success:
-            try:
-                upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_Path, data=string_to_upload, timeout=(4, 2))
-                success = True
-            except requests.exceptions.ConnectTimeout as e:
-                attempts += 1
-                function_logger.debug("update_influx - attempted " + str(attempts) + " Failed Connection Timeout")
-                function_logger.debug("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.debug("update_influx - Unexpected error:" + str(e))
-                function_logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
-                function_logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
-                attempt_error_array.append(str(sys.exc_info()[0]))
-                time.sleep(1)
-            except requests.exceptions.ConnectionError as e:
-                attempts += 1
-                function_logger.debug("update_influx - attempted " + str(attempts) + " Failed Connection Error")
-                function_logger.debug("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.debug("update_influx - Unexpected error:" + str(e))
-                function_logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
-                function_logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
-                attempt_error_array.append(str(sys.exc_info()[0]))
-                time.sleep(1)
-            except Exception as e:
-                function_logger.error("update_influx - attempted " + str(attempts) + " Failed")
-                function_logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
-                function_logger.error("update_influx - Unexpected error:" + str(e))
-                function_logger.error("update_influx - String was:" + str(string_to_upload).splitlines()[0])
-                function_logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
-                attempt_error_array.append(str(sys.exc_info()[0]))
-                break
+        for influx_url in INFLUX_DB_Path:
+            success = False
+            attempts = 0
+            attempt_error_array = []
+            while attempts < 5 and not success:
+                try:
+                    upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=influx_url, data=string_to_upload, timeout=(2, 1))
+                    success = True
+                except requests.exceptions.ConnectTimeout as e:
+                    attempts += 1
+                    function_logger.debug("update_influx - attempted " + str(attempts) + " Failed Connection Timeout")
+                    function_logger.debug("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
+                    function_logger.debug("update_influx - Unexpected error:" + str(e))
+                    function_logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
+                    function_logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                    attempt_error_array.append(str(sys.exc_info()[0]))
+                except requests.exceptions.ConnectionError as e:
+                    attempts += 1
+                    function_logger.debug("update_influx - attempted " + str(attempts) + " Failed Connection Error")
+                    function_logger.debug("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
+                    function_logger.debug("update_influx - Unexpected error:" + str(e))
+                    function_logger.debug("update_influx - String was:" + str(string_to_upload).splitlines()[0])
+                    function_logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                    attempt_error_array.append(str(sys.exc_info()[0]))
+                except Exception as e:
+                    function_logger.error("update_influx - attempted " + str(attempts) + " Failed")
+                    function_logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
+                    function_logger.error("update_influx - Unexpected error:" + str(e))
+                    function_logger.error("update_influx - String was:" + str(string_to_upload).splitlines()[0])
+                    function_logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
+                    attempt_error_array.append(str(sys.exc_info()[0]))
+                    break
         upload_to_influx_sessions.close()
         if not success:
             function_logger.error("update_influx - FAILED after 5 attempts. Failed up update " + str(string_to_upload.splitlines()[0]))
