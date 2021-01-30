@@ -57,7 +57,7 @@ import credentials
 import traceback
 import sys
 import json
-from scapy.all import Ether, IP, IPv6, ICMP, ICMPv6EchoRequest, sr, TCP, UDP, conf, srp
+# from scapy.all import Ether, IP, IPv6, ICMP, ICMPv6EchoRequest, sr, TCP, UDP, conf, srp
 import pycurl
 import threading
 import random
@@ -66,16 +66,14 @@ import datetime
 import subprocess
 import inspect
 import gc
-from pympler import muppy, summary, tracker, asizeof
-import pandas as pd
+# from pympler import muppy, summary, tracker, asizeof
+# import pandas as pd
 
 
 FLASK_HOST = credentials.FLASK_HOST
 FLASK_PORT = credentials.FLASK_PORT
 FLASK_HOSTNAME = credentials.FLASK_HOSTNAME
 LOGFILE = credentials.LOGFILE
-LOGFILE_COUNT = credentials.LOGCOUNT
-LOGFILE_MAX_SIZE = credentials.LOGBYTES
 ABSOLUTE_PATH = credentials.ABSOLUTE_PATH
 
 INFLUX_MODE = credentials.INFLUX_MODE
@@ -256,7 +254,6 @@ def pingipv4(host_dictionary, influx_results=True):
 
 def pingipv6(host_dictionary, influx_results=True):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     probe_name = "pingv6"
     function_logger.debug(host_dictionary)
     results = ""
