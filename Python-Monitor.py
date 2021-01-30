@@ -72,14 +72,21 @@ import pandas as pd
 
 FLASK_HOST = credentials.FLASK_HOST
 FLASK_PORT = credentials.FLASK_PORT
+FLASK_HOSTNAME = credentials.FLASK_HOSTNAME
 LOGFILE = credentials.LOGFILE
 LOGFILE_COUNT = credentials.LOGCOUNT
 LOGFILE_MAX_SIZE = credentials.LOGBYTES
 ABSOLUTE_PATH = credentials.ABSOLUTE_PATH
+
+INFLUX_MODE = credentials.INFLUX_MODE
+FLASK_MODE = credentials.FLASK_MODE
+
 INTERFACE = credentials.INTERFACE
 INFLUX_DB_Path = credentials.INFLUX_DB_Path
 HOSTS_DB = {}
 flask_app = Flask('router_nat_stats')
+
+THREAD_TO_BREAK = threading.Event()
 
 
 def process_hosts_in_serial():
@@ -578,7 +585,6 @@ def pingipv6(host_dictionary, influx_results=True):
 @flask_app.route('/probe_stats')
 def get_stats():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     results = ""
     results += process_hosts_in_parallel()
     return Response(results, mimetype='text/plain')
@@ -587,21 +593,20 @@ def get_stats():
 def load_hosts_file_json():
     function_logger = logger.getChild("%s.%s" % (inspect.stack()[1][3], inspect.stack()[0][3]))
     try:
-        function_logger.debug("load_user_statistics_file_json - opening user statistics file")
+        function_logger.debug("opening host file")
         user_filename = ABSOLUTE_PATH + "hosts.json"
         with open(user_filename) as host_json_file:
             return_db_json = json.load(host_json_file)
-        function_logger.debug("load_user_statistics_file_json - closing user statistics file")
-        function_logger.debug("load_user_statistics_file_json - USERS_JSON =" + str(return_db_json))
-        function_logger.info("load_user_statistics_file_json - " + "loaded USER JSON DB total EOL Records = " + str(len(return_db_json)))
-        function_logger.debug("load_user_statistics_file_json - USERS_JSON =" + str(return_db_json.keys()))
-        function_logger.debug("load_user_statistics_file_json - returning")
+        function_logger.debug("closing host file")
+        function_logger.debug("HOSTS_JSON=%s" % str(return_db_json))
+        function_logger.info("host Records=%s" % str(len(return_db_json)))
+        function_logger.debug("HOSTS=%s" % str(return_db_json.keys()))
         return return_db_json
     except Exception as e:
-        function_logger.error("load_user_statistics_file_json - something went bad opening user statistics file")
-        function_logger.error("load_user_statistics_file_json - Unexpected error:" + str(sys.exc_info()[0]))
-        function_logger.error("load_user_statistics_file_json - Unexpected error:" + str(e))
-        function_logger.error("load_user_statistics_file_json - TRACEBACK=" + str(traceback.format_exc()))
+        function_logger.error("something went bad opening host file")
+        function_logger.error("Unexpected error:%s" % str(sys.exc_info()[0]))
+        function_logger.error("Unexpected error:%s" % str(e))
+        function_logger.error("TRACEBACK=%s" % str(traceback.format_exc()))
     return {}
 
 
@@ -615,6 +620,7 @@ def child_curl_v6(host_dictionary, offset=5):
     label = host_dictionary['label']
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
+    historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
     else:
@@ -629,9 +635,10 @@ def child_curl_v6(host_dictionary, offset=5):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
-    time.sleep(time_to_sleep)
-    while True:
+    THREAD_TO_BREAK.wait(time_to_sleep)
+    while not THREAD_TO_BREAK.is_set():
         function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
         curl_lookup_average = -1
         curl_connect_average = -1
@@ -728,20 +735,23 @@ def child_curl_v6(host_dictionary, offset=5):
             drop_pc += fail * (100 / count)
         tt2 = time.time()
         results = ""
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", interface, str("{:.2f}".format(float(curl_connect_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", interface, str("{:.2f}".format(float(curl_connect_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMax", interface, str("{:.2f}".format(float(curl_connect_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupAvg", interface, str("{:.2f}".format(float(curl_lookup_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMin", interface, str("{:.2f}".format(float(curl_lookup_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMax", interface, str("{:.2f}".format(float(curl_lookup_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferAvg", interface, str("{:.2f}".format(float(curl_pre_transfer_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMin", interface, str("{:.2f}".format(float(curl_pre_transfer_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMax", interface, str("{:.2f}".format(float(curl_pre_transfer_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferAvg", interface, str("{:.2f}".format(float(curl_total_transfer_average)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMin", interface, str("{:.2f}".format(float(curl_total_transfer_min)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMax", interface, str("{:.2f}".format(float(curl_total_transfer_max)*1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", interface, drop_pc)
-        update_influx(results, future)
+        results += 'Python_Monitor,host=%s,target=%s,label=%s,dns=%s,group=%s,probe=%s,iface=%s ' \
+                   'ConnectAvg=%s,ConnectMin=%s,ConnectMax=%s,LookupAvg=%s,LookupMin=%s,LookupMax=%s,' \
+                   'PreTransferAvg=%s,PreTransferMin=%s,PreTransferMax=%s,TotalTransferAvg=%s,TotalTransferMin=%s,TotalTransferMax=%s,curlDrop=%s \n' % \
+                   (FLASK_HOSTNAME, url, label, dns, group, probe_name, interface,
+                    str("{:.2f}".format(float(curl_connect_average) * 1000)), str("{:.2f}".format(float(curl_connect_min) * 1000)), str("{:.2f}".format(float(curl_connect_max) * 1000)), str("{:.2f}".format(float(curl_lookup_average) * 1000)), str("{:.2f}".format(float(curl_lookup_min) * 1000)), str("{:.2f}".format(float(curl_lookup_max) * 1000)),
+                    str("{:.2f}".format(float(curl_pre_transfer_average) * 1000)), str("{:.2f}".format(float(curl_pre_transfer_min) * 1000)), str("{:.2f}".format(float(curl_pre_transfer_max) * 1000)), str("{:.2f}".format(float(curl_total_transfer_average) * 1000)), str("{:.2f}".format(float(curl_total_transfer_min) * 1000)), str("{:.2f}".format(float(curl_total_transfer_max) * 1000)), drop_pc)
+        to_send = ""
+        for each in results.splitlines():
+            to_send += each + " " + timestamp_string + "\n"
+        if not historical_upload == "":
+            function_logger.debug("adding history to upload")
+            to_send += historical_upload
+        if update_influx(to_send):
+            historical_upload = ""
+        else:
+            function_logger.debug("adding to history")
+            historical_upload += to_send
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
@@ -754,32 +764,17 @@ def child_curl_v6(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-
-        # manual garbage collection for multithreadded thing
-        # if t.minute == 0:
-        #     if t.hour in {4, 8, 12, 16, 20, 0}:
-        #         ####################################################################################################################################
-        #         function_logger.critical("doing_garbage_collection")
-        #         gc.collect()
-        #         all_objects = muppy.get_objects()
-        #         sum1 = summary.summarize(all_objects)
-        #         # Prints out a summary of the large objects
-        #         summary.print_(sum1)
-        #         for line in summary.format_(sum1):
-        #             function_logger.critical(line)
-        #
-        #         for name, obj in locals().items():
-        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
-                ####################################################################################################################################
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: # guess comit to fix timing thing
         if 29 > time_to_sleep > 0:  # guess comit to fix timing thing
-            time.sleep(time_to_sleep)
+            THREAD_TO_BREAK.wait(time_to_sleep)
         else:
             time.sleep(random.uniform(0, 1) * offset) # guess comit to fix timing thing
-            time.sleep(90)
+            THREAD_TO_BREAK.wait(90)
             function_logger.warning("had sleep time outside of valid range value was %s" % time_to_sleep)
+# child_curl_v6
 
 
 def child_curl_v4(host_dictionary, offset=5):
@@ -792,6 +787,7 @@ def child_curl_v4(host_dictionary, offset=5):
     label = host_dictionary['label']
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
+    historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
     else:
@@ -806,9 +802,10 @@ def child_curl_v4(host_dictionary, offset=5):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
-    time.sleep(time_to_sleep)
-    while True:
+    THREAD_TO_BREAK.wait(time_to_sleep)
+    while not THREAD_TO_BREAK.is_set():
         function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
         curl_lookup_average = -1
         curl_connect_average = -1
@@ -905,20 +902,23 @@ def child_curl_v4(host_dictionary, offset=5):
             drop_pc += fail * (100 / count)
         tt2 = time.time()
         results = ""
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectAvg", interface, str("{:.2f}".format(float(curl_connect_average) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMin", interface, str("{:.2f}".format(float(curl_connect_min) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "ConnectMax", interface, str("{:.2f}".format(float(curl_connect_max) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupAvg", interface, str("{:.2f}".format(float(curl_lookup_average) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMin", interface, str("{:.2f}".format(float(curl_lookup_min) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "LookupMax", interface, str("{:.2f}".format(float(curl_lookup_max) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferAvg", interface,str("{:.2f}".format(float(curl_pre_transfer_average) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMin", interface,str("{:.2f}".format(float(curl_pre_transfer_min) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "PreTransferMax", interface,str("{:.2f}".format(float(curl_pre_transfer_max) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferAvg", interface,str("{:.2f}".format(float(curl_total_transfer_average) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMin", interface,str("{:.2f}".format(float(curl_total_transfer_min) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "TotalTransferMax", interface,str("{:.2f}".format(float(curl_total_transfer_max) * 1000)))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (url, label, dns, group, probe_name, "curlDrop", interface, drop_pc)
-        update_influx(results, future)
+        results += 'Python_Monitor,host=%s,target=%s,label=%s,dns=%s,group=%s,probe=%s,iface=%s ' \
+                   'ConnectAvg=%s,ConnectMin=%s,ConnectMax=%s,LookupAvg=%s,LookupMin=%s,LookupMax=%s,' \
+                   'PreTransferAvg=%s,PreTransferMin=%s,PreTransferMax=%s,TotalTransferAvg=%s,TotalTransferMin=%s,TotalTransferMax=%s,curlDrop=%s \n' % \
+                   (FLASK_HOSTNAME, url, label, dns, group, probe_name, interface,
+                    str("{:.2f}".format(float(curl_connect_average) * 1000)), str("{:.2f}".format(float(curl_connect_min) * 1000)), str("{:.2f}".format(float(curl_connect_max) * 1000)), str("{:.2f}".format(float(curl_lookup_average) * 1000)), str("{:.2f}".format(float(curl_lookup_min) * 1000)), str("{:.2f}".format(float(curl_lookup_max) * 1000)),
+                    str("{:.2f}".format(float(curl_pre_transfer_average) * 1000)), str("{:.2f}".format(float(curl_pre_transfer_min) * 1000)), str("{:.2f}".format(float(curl_pre_transfer_max) * 1000)), str("{:.2f}".format(float(curl_total_transfer_average) * 1000)), str("{:.2f}".format(float(curl_total_transfer_min) * 1000)), str("{:.2f}".format(float(curl_total_transfer_max) * 1000)), drop_pc)
+        to_send = ""
+        for each in results.splitlines():
+            to_send += each + " " + timestamp_string + "\n"
+        if not historical_upload == "":
+            function_logger.debug("adding history to upload")
+            to_send += historical_upload
+        if update_influx(to_send):
+            historical_upload = ""
+        else:
+            function_logger.debug("adding to history")
+            historical_upload += to_send
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
@@ -931,33 +931,16 @@ def child_curl_v4(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-
-        # manual garbage collection for multithreadded thing
-        #
-        # if t.minute == 0:
-        #     if t.hour in {4, 8, 12, 16, 20, 0}:
-        #         ####################################################################################################################################
-        #         function_logger.critical("doing_garbage_collection")
-        #         gc.collect()
-        #         all_objects = muppy.get_objects()
-        #         sum1 = summary.summarize(all_objects)
-        #         # Prints out a summary of the large objects
-        #         summary.print_(sum1)
-        #         for line in summary.format_(sum1):
-        #             function_logger.critical(line)
-        #
-        #         for name, obj in locals().items():
-        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
-                ####################################################################################################################################
-
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: guess comit to fix timing thing
         if 29 > time_to_sleep > 0: # guess comit to fix timing thing
-            time.sleep(time_to_sleep)
+            THREAD_TO_BREAK.wait(time_to_sleep)
         else:
             time.sleep(random.uniform(0, 1) * offset)  # guess comit to fix timing thing
-            time.sleep(90)
+            THREAD_TO_BREAK.wait(90)
             function_logger.warning("child_curl_v4 - had sleep time outside of valid range value was %s" % time_to_sleep)
+# child_curl_v4
 
 
 def child_icmp_ping_v6(host_dictionary, offset=10):
@@ -971,11 +954,11 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
     label = host_dictionary['label']
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
+    historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-
     t = datetime.datetime.now()
     if t.second < 29:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
@@ -986,9 +969,10 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
-    time.sleep(time_to_sleep)
-    while True:
+    THREAD_TO_BREAK.wait(time_to_sleep)
+    while not THREAD_TO_BREAK.is_set():
         function_logger.debug("child_icmp_ping_v6 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         drop_pc = 100
         latency_average = -1
@@ -1027,11 +1011,19 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
             function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         tt2 = time.time()
         results = ""
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", interface, str("{:.2f}".format(float(latency_max))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, str(drop_pc))
-        update_influx(results, future)
+        results += 'Python_Monitor,host=%s,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,iface=%s latencyAvg=%s,latencyMin=%s,latencyMax=%s,latencyDroppc=%s \n' % \
+                   (FLASK_HOSTNAME, hostname, label, tos, dns, group, probe_name, interface, str("{:.2f}".format(float(latency_average))), str("{:.2f}".format(float(latency_min))), str("{:.2f}".format(float(latency_max))), drop_pc)
+        to_send = ""
+        for each in results.splitlines():
+            to_send += each + " " + timestamp_string + "\n"
+        if not historical_upload == "":
+            function_logger.debug("adding history to upload")
+            to_send += historical_upload
+        if update_influx(to_send):
+            historical_upload = ""
+        else:
+            function_logger.debug("adding to history")
+            historical_upload += to_send
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
@@ -1044,28 +1036,12 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        # manual garbage collection for multithreadded thing
-        # if t.minute == 0:
-        #     if t.hour in {4, 8, 12, 16, 20, 0}:
-        #         ####################################################################################################################################
-        #         function_logger.critical("doing_garbage_collection")
-        #         gc.collect()
-        #         all_objects = muppy.get_objects()
-        #         sum1 = summary.summarize(all_objects)
-        #         # Prints out a summary of the large objects
-        #         summary.print_(sum1)
-        #         for line in summary.format_(sum1):
-        #             function_logger.critical(line)
-        #
-        #         for name, obj in locals().items():
-        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
-                ####################################################################################################################################
-
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
-            time.sleep(time_to_sleep)
+            THREAD_TO_BREAK.wait(time_to_sleep)
         time.sleep(random.uniform(0, 1) * offset)
-
+# child_icmp_ping_v6
 
 
 def child_icmp_ping_v4(host_dictionary, offset=10):
@@ -1079,6 +1055,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
     label = host_dictionary['label']
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
+    historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
     else:
@@ -1093,9 +1070,10 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
-    time.sleep(time_to_sleep)
-    while True:
+    THREAD_TO_BREAK.wait(time_to_sleep)
+    while not THREAD_TO_BREAK.is_set():
         function_logger.debug("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         drop_pc = 0
         latency_average = -1
@@ -1134,11 +1112,19 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
             function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         tt2 = time.time()
         results = ""
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyAvg", interface, str("{:.2f}".format(float(latency_average))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMin", interface, str("{:.2f}".format(float(latency_min))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyMax", interface, str("{:.2f}".format(float(latency_max))))
-        results += 'Python_Monitor,__name__=PythonAssurance,host=PythonAssurance,instance=grafana-worker-02.greenbridgetech.co.uk:8050,job=PythonAssurance,service_name=PythonAssurance,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,measurement=%s,iface=%s value=%s\n' % (hostname, label, tos, dns, group, probe_name, "latencyDrop", interface, drop_pc)
-        update_influx(results, future)
+        results += 'Python_Monitor,host=%s,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,iface=%s latencyAvg=%s,latencyMin=%s,latencyMax=%s,latencyDroppc=%s \n' % \
+                   (FLASK_HOSTNAME, hostname, label, tos, dns, group, probe_name, interface, str("{:.2f}".format(float(latency_average))), str("{:.2f}".format(float(latency_min))), str("{:.2f}".format(float(latency_max))), drop_pc)
+        to_send = ""
+        for each in results.splitlines():
+            to_send += each + " " + timestamp_string + "\n"
+        if not historical_upload == "":
+            function_logger.debug("adding history to upload")
+            to_send += historical_upload
+        if update_influx(to_send):
+            historical_upload = ""
+        else:
+            function_logger.debug("adding to history")
+            historical_upload += to_send
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
@@ -1151,27 +1137,12 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-
-        # manual garbage collection for multithreadded thing
-        # if t.minute == 0:
-        #     if t.hour in {4, 8, 12, 16, 20, 0}:
-        #         ####################################################################################################################################
-        #         function_logger.critical("doing_garbage_collection")
-        #         gc.collect()
-        #         all_objects = muppy.get_objects()
-        #         sum1 = summary.summarize(all_objects)
-        #         # Prints out a summary of the large objects
-        #         summary.print_(sum1)
-        #         for line in summary.format_(sum1):
-        #             function_logger.critical(line)
-        #
-        #         for name, obj in locals().items():
-        #             function_logger.critical(name + " - " + str((asizeof.asizeof(obj) / 1024)))
-                ####################################################################################################################################
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
-            time.sleep(time_to_sleep)
+            THREAD_TO_BREAK.wait(time_to_sleep)
         time.sleep(random.uniform(0, 1) * offset)
+# child_icmp_ping_v4
 
 
 def child_tcp_ping_v6(host_dictionary, offset=10):
@@ -1683,13 +1654,17 @@ def master_icmp_ping_v4_probe_stats():
         function_logger.error("master_icmp_ping_v4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
 
 
-def update_influx(raw_string, timestamp):
+def update_influx(raw_string, timestamp=None):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     try:
         string_to_upload = ""
-        timestamp_string = str(int(timestamp.timestamp()) * 1000000000)
-        for each in raw_string.splitlines():
-            string_to_upload += each + " " + timestamp_string + "\n"
+        if timestamp is not None:
+            timestamp_string = str(int(timestamp.timestamp()) * 1000000000)
+            for each in raw_string.splitlines():
+                string_to_upload += each + " " + timestamp_string + "\n"
+        else:
+            string_to_upload = raw_string
+        success_array = []
         upload_to_influx_sessions = requests.session()
         for influx_url in INFLUX_DB_Path:
             success = False
@@ -1698,7 +1673,13 @@ def update_influx(raw_string, timestamp):
             while attempts < 5 and not success:
                 try:
                     upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=influx_url, data=string_to_upload, timeout=(2, 1))
-                    success = True
+                    if upload_to_influx_sessions_response.status_code == 204:
+                        function_logger.debug("content=%s" % upload_to_influx_sessions_response.content)
+                        success = True
+                    else:
+                        attempts += 1
+                        function_logger.warning("status_code=%s" % upload_to_influx_sessions_response.status_code)
+                        function_logger.warning("content=%s" % upload_to_influx_sessions_response.content)
                 except requests.exceptions.ConnectTimeout as e:
                     attempts += 1
                     function_logger.debug("update_influx - attempted " + str(attempts) + " Failed Connection Timeout")
@@ -1723,22 +1704,30 @@ def update_influx(raw_string, timestamp):
                     function_logger.debug("update_influx - TRACEBACK=" + str(traceback.format_exc()))
                     attempt_error_array.append(str(sys.exc_info()[0]))
                     break
+            success_array.append(success)
         upload_to_influx_sessions.close()
-        if not success:
+        super_success = False
+        for each in success_array:
+            if not each:
+                super_success = False
+                break
+            else:
+                super_success = True
+        if not super_success:
             function_logger.error("update_influx - FAILED after 5 attempts. Failed up update " + str(string_to_upload.splitlines()[0]))
             function_logger.error("update_influx - FAILED after 5 attempts. attempt_error_array: " + str(attempt_error_array))
-            return
+            return False
         else:
             function_logger.debug("update_influx - " + "string for influx is " + str(string_to_upload))
             function_logger.debug("update_influx - " + "influx status code is  " + str(upload_to_influx_sessions_response.status_code))
             function_logger.debug("update_influx - " + "influx response is code is " + str(upload_to_influx_sessions_response.text[0:1000]))
-            return
+            return True
     except Exception as e:
         function_logger.error("update_influx - something went bad sending to InfluxDB")
         function_logger.error("update_influx - Unexpected error:" + str(sys.exc_info()[0]))
         function_logger.error("update_influx - Unexpected error:" + str(e))
         function_logger.error("update_influx - TRACEBACK=" + str(traceback.format_exc()))
-    return
+    return False
 
 
 if __name__ == '__main__':
@@ -1757,16 +1746,18 @@ if __name__ == '__main__':
     HOSTS_DB = load_hosts_file_json()
 
     # thread per process
-    master_thread_icmp_ping_v4 = threading.Thread(target=lambda: master_icmp_ping_v4_probe_stats())
-    master_thread_icmp_ping_v4.start()
-    master_thread_icmp_ping_v6 = threading.Thread(target=lambda: master_icmp_ping_v6_probe_stats())
-    master_thread_icmp_ping_v6.start()
-    master_thread_curl_v4 = threading.Thread(target=lambda: master_curl_v4_probe_stats())
-    master_thread_curl_v4.start()
-    master_thread_curl_v6 = threading.Thread(target=lambda: master_curl_v6_probe_stats())
-    master_thread_curl_v6.start()
+    if INFLUX_MODE:
+        master_thread_icmp_ping_v4 = threading.Thread(target=lambda: master_icmp_ping_v4_probe_stats())
+        master_thread_icmp_ping_v6 = threading.Thread(target=lambda: master_icmp_ping_v6_probe_stats())
+        master_thread_curl_v4 = threading.Thread(target=lambda: master_curl_v4_probe_stats())
+        master_thread_curl_v6 = threading.Thread(target=lambda: master_curl_v6_probe_stats())
+        master_thread_icmp_ping_v4.start()
+        master_thread_icmp_ping_v6.start()
+        master_thread_curl_v4.start()
+        master_thread_curl_v6.start()
 
     # build flask instance.
-    logger.info("__main__ - " + "starting flask")
-    http_server = wsgiserver.WSGIServer(host=FLASK_HOST, port=FLASK_PORT, wsgi_app=flask_app)
-    http_server.start()
+    if FLASK_MODE:
+        logger.info("__main__ - " + "starting flask")
+        http_server = wsgiserver.WSGIServer(host=FLASK_HOST, port=FLASK_PORT, wsgi_app=flask_app)
+        http_server.start()
