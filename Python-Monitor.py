@@ -635,6 +635,7 @@ def child_curl_v6(host_dictionary, offset=5):
     timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
+    consecutive_error_count = 0
     while not THREAD_TO_BREAK.is_set():
         function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
         curl_lookup_average = -1
@@ -704,6 +705,7 @@ def child_curl_v6(host_dictionary, offset=5):
                         curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
+                    consecutive_error_count = 0
                     c.close()
                     time.sleep(timeout / 4)
                 else:
@@ -713,7 +715,12 @@ def child_curl_v6(host_dictionary, offset=5):
                 function_logger.warning("label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
                 function_logger.warning("Unexpected error:" + str(sys.exc_info()[0]))
                 function_logger.warning("Unexpected error:" + str(e))
-                function_logger.warning("TRACEBACK=" + str(traceback.format_exc()))
+                consecutive_error_count += 1
+                if consecutive_error_count > 10:
+                    function_logger.warning("consecutive errors on lable=%s error=%s" % (label, str(e)))
+                    THREAD_TO_BREAK.wait(600)
+                    consecutive_error_count = 0
+                # function_logger.warning("TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
             except Exception as e:
@@ -802,6 +809,7 @@ def child_curl_v4(host_dictionary, offset=5):
     timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
+    consecutive_error_count = 0
     while not THREAD_TO_BREAK.is_set():
         function_logger.debug("sending curl with attributes url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
         curl_lookup_average = -1
@@ -871,6 +879,7 @@ def child_curl_v4(host_dictionary, offset=5):
                         curl_app_connect_average = c.getinfo(c.APPCONNECT_TIME)
                         curl_pre_transfer_average = c.getinfo(c.PRETRANSFER_TIME)
                         curl_total_transfer_average = c.getinfo(c.TOTAL_TIME)
+                    consecutive_error_count = 0
                     c.close()
                     time.sleep(timeout / 4)
                 else:
@@ -880,7 +889,12 @@ def child_curl_v4(host_dictionary, offset=5):
                 function_logger.warning("label=" + label + " url=" + url + " count=" + str(count) + " timeout=" + str(timeout))
                 function_logger.warning("Unexpected error:" + str(sys.exc_info()[0]))
                 function_logger.warning("Unexpected error:" + str(e))
-                function_logger.warning("TRACEBACK=" + str(traceback.format_exc()))
+                consecutive_error_count += 1
+                if consecutive_error_count > 10:
+                    function_logger.warning("consecutive errors on lable=%s error=%s" % (label, str(e)))
+                    THREAD_TO_BREAK.wait(600)
+                    consecutive_error_count = 0
+                # function_logger.warning("TRACEBACK=" + str(traceback.format_exc()))
                 fail += 1
                 c.close()
             except Exception as e:
