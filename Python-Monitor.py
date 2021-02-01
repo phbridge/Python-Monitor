@@ -754,6 +754,7 @@ def child_curl_v6(host_dictionary, offset=5):
         if update_influx(to_send):
             historical_upload = ""
         else:
+            historical_upload = ""
             function_logger.debug("adding to history")
             historical_upload += to_send
         tt3 = time.time()
@@ -928,6 +929,7 @@ def child_curl_v4(host_dictionary, offset=5):
         if update_influx(to_send):
             historical_upload = ""
         else:
+            historical_upload = ""
             function_logger.debug("adding to history")
             historical_upload += to_send
         tt3 = time.time()
@@ -1033,6 +1035,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         if update_influx(to_send):
             historical_upload = ""
         else:
+            historical_upload = ""
             function_logger.debug("adding to history")
             historical_upload += to_send
         tt3 = time.time()
@@ -1134,6 +1137,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         if update_influx(to_send):
             historical_upload = ""
         else:
+            historical_upload = ""
             function_logger.debug("adding to history")
             historical_upload += to_send
         tt3 = time.time()
