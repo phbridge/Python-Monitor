@@ -1748,7 +1748,7 @@ def update_influx(raw_string, timestamp=None):
 if __name__ == '__main__':
     # Create Logger
     logger = logging.getLogger("Python_Monitor")
-    logger_handler = logging.handlers.TimedRotatingFileHandler(LOGFILE, backupCount=365, when='D')
+    logger_handler = logging.handlers.TimedRotatingFileHandler(LOGFILE, backupCount=30, when='D')
     logger_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(process)d:%(thread)d:%(name)s - %(message)s')
     logger_handler.setFormatter(logger_formatter)
     logger.addHandler(logger_handler)
