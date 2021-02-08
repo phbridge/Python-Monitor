@@ -1681,18 +1681,19 @@ def update_influx(raw_string, timestamp=None):
             string_to_upload = raw_string
         success_array = []
         upload_to_influx_sessions = requests.session()
-        for influx_path_key in INFLUX_DB_PATH:
+        for influx_path_key in INFLUX_DB_PATH.keys():
             success = False
             attempts = 0
             attempt_error_array = []
             while attempts < 5 and not success:
                 try:
                     if INFLUX_DB_PATH[influx_path_key].get('Authorization'):
+                        function_logger.critical("trying with headers")
                         influx_headers = {"Authorization": INFLUX_DB_PATH[influx_path_key]['Authorization']}
                         upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1), headers=influx_headers)
                     else:
+                        function_logger.critical("trying no headers")
                         upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1))
-
                     if upload_to_influx_sessions_response.status_code == 204:
                         function_logger.debug("content=%s" % upload_to_influx_sessions_response.content)
                         success = True
