@@ -80,7 +80,7 @@ INFLUX_MODE = credentials.INFLUX_MODE
 FLASK_MODE = credentials.FLASK_MODE
 
 INTERFACE = credentials.INTERFACE
-INFLUX_DB_Path = credentials.INFLUX_DB_Path
+INFLUX_DB_PATH = credentials.INFLUX_DB_PATH
 HOSTS_DB = {}
 flask_app = Flask('router_nat_stats')
 
@@ -632,7 +632,7 @@ def child_curl_v6(host_dictionary, offset=5):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 1000000000)
+    timestamp_string = str(int(future.timestamp()) * 100000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     consecutive_error_count = 0
@@ -769,7 +769,7 @@ def child_curl_v6(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 1000000000)
+        timestamp_string = str(int(future.timestamp()) * 100000)
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: # guess comit to fix timing thing
@@ -807,7 +807,7 @@ def child_curl_v4(host_dictionary, offset=5):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 1000000000)
+    timestamp_string = str(int(future.timestamp()) * 100000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     consecutive_error_count = 0
@@ -944,7 +944,7 @@ def child_curl_v4(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 1000000000)
+        timestamp_string = str(int(future.timestamp()) * 100000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: guess comit to fix timing thing
         if 29 > time_to_sleep > 0: # guess comit to fix timing thing
@@ -982,7 +982,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 1000000000)
+    timestamp_string = str(int(future.timestamp()) * 100000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     while not THREAD_TO_BREAK.is_set():
@@ -1050,7 +1050,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 1000000000)
+        timestamp_string = str(int(future.timestamp()) * 100000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
@@ -1084,7 +1084,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 1000000000)
+    timestamp_string = str(int(future.timestamp()) * 100000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     while not THREAD_TO_BREAK.is_set():
@@ -1152,7 +1152,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 1000000000)
+        timestamp_string = str(int(future.timestamp()) * 100000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
@@ -1674,20 +1674,25 @@ def update_influx(raw_string, timestamp=None):
     try:
         string_to_upload = ""
         if timestamp is not None:
-            timestamp_string = str(int(timestamp.timestamp()) * 1000000000)
+            timestamp_string = str(int(timestamp.timestamp()) * 100000)
             for each in raw_string.splitlines():
                 string_to_upload += each + " " + timestamp_string + "\n"
         else:
             string_to_upload = raw_string
         success_array = []
         upload_to_influx_sessions = requests.session()
-        for influx_url in INFLUX_DB_Path:
+        for influx_path_key in INFLUX_DB_PATH:
             success = False
             attempts = 0
             attempt_error_array = []
             while attempts < 5 and not success:
                 try:
-                    upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=influx_url, data=string_to_upload, timeout=(2, 1))
+                    if INFLUX_DB_PATH[influx_path_key].get('Authorization'):
+                        influx_headers = {"Authorization": INFLUX_DB_PATH[influx_path_key]['Authorization']}
+                        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1), headers=influx_headers)
+                    else:
+                        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1))
+
                     if upload_to_influx_sessions_response.status_code == 204:
                         function_logger.debug("content=%s" % upload_to_influx_sessions_response.content)
                         success = True
