@@ -1691,6 +1691,9 @@ def update_influx(raw_string, timestamp=None):
                         function_logger.critical("trying with headers")
                         influx_headers = {"Authorization": INFLUX_DB_PATH[influx_path_key]['Authorization']}
                         upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1), headers=influx_headers)
+                        function_logger.critical("url is=%s" % INFLUX_DB_PATH[influx_path_key]['url'])
+                        function_logger.critical("headers=%s" % influx_headers)
+                        function_logger.critical("auth=%s" % INFLUX_DB_PATH[influx_path_key]['Authorization'])
                     else:
                         function_logger.critical("trying no headers")
                         upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1))
