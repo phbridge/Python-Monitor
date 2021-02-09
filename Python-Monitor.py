@@ -1687,16 +1687,7 @@ def update_influx(raw_string, timestamp=None):
             attempt_error_array = []
             while attempts < 5 and not success:
                 try:
-                    if INFLUX_DB_PATH[influx_path_key].get('Authorization'):
-                        function_logger.debug("trying with headers")
-                        influx_headers = {"Authorization": INFLUX_DB_PATH[influx_path_key]['Authorization']}
-                        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1), headers=influx_headers)
-                        function_logger.debug("url is=%s" % INFLUX_DB_PATH[influx_path_key]['url'])
-                        function_logger.debug("headers=%s" % influx_headers)
-                        function_logger.debug("auth=%s" % INFLUX_DB_PATH[influx_path_key]['Authorization'])
-                    else:
-                        function_logger.debug("trying no headers")
-                        upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1))
+                    upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1))
                     if upload_to_influx_sessions_response.status_code == 204:
                         function_logger.debug("content=%s" % upload_to_influx_sessions_response.content)
                         function_logger.debug("status_code=%s" % upload_to_influx_sessions_response.status_code)
