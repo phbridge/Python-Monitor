@@ -632,7 +632,7 @@ def child_curl_v6(host_dictionary, offset=5):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 100000)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     consecutive_error_count = 0
@@ -769,7 +769,7 @@ def child_curl_v6(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 100000)
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
 
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: # guess comit to fix timing thing
@@ -807,7 +807,7 @@ def child_curl_v4(host_dictionary, offset=5):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 100000)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     consecutive_error_count = 0
@@ -944,7 +944,7 @@ def child_curl_v4(host_dictionary, offset=5):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 100000)
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: guess comit to fix timing thing
         if 29 > time_to_sleep > 0: # guess comit to fix timing thing
@@ -982,7 +982,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 100000)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     while not THREAD_TO_BREAK.is_set():
@@ -1050,7 +1050,7 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 100000)
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
@@ -1084,7 +1084,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
-    timestamp_string = str(int(future.timestamp()) * 100000)
+    timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     while not THREAD_TO_BREAK.is_set():
@@ -1152,7 +1152,7 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
-        timestamp_string = str(int(future.timestamp()) * 100000)
+        timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         if 30 > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
@@ -1674,7 +1674,7 @@ def update_influx(raw_string, timestamp=None):
     try:
         string_to_upload = ""
         if timestamp is not None:
-            timestamp_string = str(int(timestamp.timestamp()) * 100000)
+            timestamp_string = str(int(timestamp.timestamp()) * 1000000000)
             for each in raw_string.splitlines():
                 string_to_upload += each + " " + timestamp_string + "\n"
         else:
