@@ -1698,7 +1698,7 @@ def update_influx(raw_string, timestamp=None):
                         function_logger.critical("trying no headers")
                         upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=INFLUX_DB_PATH[influx_path_key]['url'], data=string_to_upload, timeout=(2, 1))
                     if upload_to_influx_sessions_response.status_code == 204:
-                        function_logger.debug("content=%s" % upload_to_influx_sessions_response.content)
+                        function_logger.critical("content=%s" % upload_to_influx_sessions_response.content)
                         success = True
                     else:
                         attempts += 1
