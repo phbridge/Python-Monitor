@@ -505,7 +505,7 @@ def child_curl_v4(host_dictionary, offset=5):
             function_logger.warning("child_curl_v4 - had sleep time outside of valid range value was %s" % time_to_sleep)
 
 
-def child_icmp_ping_v6(host_dictionary, offset=10):
+def child_icmp_ping_v6(host_dictionary, offset=5):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "icmp_ping_v6"
     function_logger.debug(host_dictionary)
@@ -522,12 +522,18 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
     else:
         interface = host_dictionary['interface']
     t = datetime.datetime.now()
-    if t.second < 29:
+    if t.second < 15:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        future += datetime.timedelta(seconds=30)
-    elif t.second > 30:
+        future += datetime.timedelta(seconds=15)
+    elif t.second < 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
+        future += datetime.timedelta(seconds=15)
+    elif t.second < 45:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-        future += datetime.timedelta(seconds=30)
+        future += datetime.timedelta(seconds=15)
+    elif t.second > 45:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
+        future += datetime.timedelta(seconds=15)
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
@@ -590,23 +596,29 @@ def child_icmp_ping_v6(host_dictionary, offset=10):
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
-        if t.second < 29:
+        if t.second < 15:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=30)
-        elif t.second > 30:
+            future += datetime.timedelta(seconds=15)
+        elif t.second < 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
+            future += datetime.timedelta(seconds=15)
+        elif t.second < 45:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-            future += datetime.timedelta(seconds=30)
+            future += datetime.timedelta(seconds=15)
+        elif t.second > 45:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
+            future += datetime.timedelta(seconds=15)
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
             future += datetime.timedelta(seconds=90)
         timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
-        if 30 > time_to_sleep > 0:
+        if 15 > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
         time.sleep(random.uniform(0, 1) * offset)
 
 
-def child_icmp_ping_v4(host_dictionary, offset=10):
+def child_icmp_ping_v4(host_dictionary, offset=5):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "icmp_ping_v4"
     function_logger.debug(host_dictionary)
@@ -623,12 +635,18 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
     else:
         interface = host_dictionary['interface']
     t = datetime.datetime.now()
-    if t.second < 29:
+    if t.second < 15:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        future += datetime.timedelta(seconds=30)
-    elif t.second > 30:
+        future += datetime.timedelta(seconds=15)
+    elif t.second < 30:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
+        future += datetime.timedelta(seconds=15)
+    elif t.second < 45:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-        future += datetime.timedelta(seconds=30)
+        future += datetime.timedelta(seconds=15)
+    elif t.second > 45:
+        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
+        future += datetime.timedelta(seconds=15)
     else:
         future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
         future += datetime.timedelta(seconds=90)
@@ -691,18 +709,24 @@ def child_icmp_ping_v4(host_dictionary, offset=10):
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         t = datetime.datetime.now()
-        if t.second < 29:
+        if t.second < 15:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=30)
-        elif t.second > 30:
+            future += datetime.timedelta(seconds=15)
+        elif t.second < 30:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
+            future += datetime.timedelta(seconds=15)
+        elif t.second < 45:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-            future += datetime.timedelta(seconds=30)
+            future += datetime.timedelta(seconds=15)
+        elif t.second > 45:
+            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
+            future += datetime.timedelta(seconds=15)
         else:
             future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=90)
+            future += datetime.timedelta(seconds=15)
         timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
-        if 30 > time_to_sleep > 0:
+        if 15 > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
         time.sleep(random.uniform(0, 1) * offset)
 
