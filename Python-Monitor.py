@@ -83,7 +83,7 @@ LOGFILE = credentials.LOGFILE
 ABSOLUTE_PATH = credentials.ABSOLUTE_PATH
 
 INFLUX_MODE = credentials.INFLUX_MODE
-FLASK_MODE = credentials.FLASK_MODE
+FLASK_MODE = credentials.FLASK_MODELOGFILE
 
 INTERFACE = credentials.INTERFACE
 INFLUX_DB_PATH = credentials.INFLUX_DB_PATH
@@ -555,7 +555,7 @@ def child_icmp_ping_v6(host_dictionary, offset=5):
                 latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
                 latency_max = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
             else:
-                drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
+                drop_pc = float(str(output.splitlines()[-1]).split(" ")[7].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
                 if "100%" in str(e.output.splitlines()[-2]):
@@ -747,7 +747,6 @@ def master_curl_v6_probe_stats():
 
 def master_curl_v4_probe_stats():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     try:
         child_thread_curl_v4 = []
         for key in HOSTS_DB['curl_v4'].keys():
@@ -807,7 +806,7 @@ def update_influx(raw_string, timestamp=None):
             attempt_error_array = []
             while attempts < 5 and not success:
                 try:
-                    upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=influx_path_url, data=string_to_upload, timeout=(2, 1))
+                    upload_to_influx_sessions_response = upload_to_influx_sessions.post(url=influx_path_url, data=string_to_upload, timeout=(20, 10))
                     if upload_to_influx_sessions_response.status_code == 204:
                         function_logger.debug("content=%s" % upload_to_influx_sessions_response.content)
                         function_logger.debug("status_code=%s" % upload_to_influx_sessions_response.status_code)
