@@ -555,11 +555,11 @@ def child_icmp_ping_v6(host_dictionary, offset=5):
                 latency_average = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[1])
                 latency_max = float(str(output.splitlines()[-1]).split(" ")[3].split("/")[2])
             else:
-                drop_pc = float(str(output.splitlines()[-1]).split(" ")[7].replace("%", ""))
+                drop_pc = float(str(output.splitlines()[-1]).split(" ")[5].replace("%", ""))
         except subprocess.CalledProcessError as e:
             try:
                 if "100%" in str(e.output.splitlines()[-2]):
-                    drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[5].replace("%", ""))
+                    drop_pc = float(str(e.output.splitlines()[-2]).split(" ")[7].replace("%", ""))
                 else:
                     function_logger.warning("in in %s" % str(e.output.splitlines()[-2]))
                     function_logger.warning("in in %s - Unexpected error: %s" % (label, str(e.output)))
