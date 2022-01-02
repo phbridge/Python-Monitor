@@ -517,7 +517,7 @@ def child_icmp_ping_v6(host_dictionary, offset=5, frequency=15):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
     if host_dictionary.get("frequency"):
-        frequency = host_dictionary['frequency']
+        frequency = int(host_dictionary['frequency'])
     historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
@@ -605,7 +605,7 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
     if host_dictionary.get("frequency"):
-        frequency = host_dictionary['frequency']
+        frequency = int(host_dictionary['frequency'])
     historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
