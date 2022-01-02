@@ -505,7 +505,7 @@ def child_curl_v4(host_dictionary, offset=5):
             function_logger.warning("child_curl_v4 - had sleep time outside of valid range value was %s" % time_to_sleep)
 
 
-def child_icmp_ping_v6(host_dictionary, offset=5):
+def child_icmp_ping_v6(host_dictionary, offset=5, frequency=15):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "icmp_ping_v6"
     function_logger.debug(host_dictionary)
@@ -516,27 +516,16 @@ def child_icmp_ping_v6(host_dictionary, offset=5):
     label = host_dictionary['label']
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
+    if host_dictionary.get("frequency"):
+        frequency = host_dictionary['frequency']
     historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
+    THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
     t = datetime.datetime.now()
-    if t.second < 15:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        future += datetime.timedelta(seconds=15)
-    elif t.second < 30:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
-        future += datetime.timedelta(seconds=15)
-    elif t.second < 45:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-        future += datetime.timedelta(seconds=15)
-    elif t.second > 45:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
-        future += datetime.timedelta(seconds=15)
-    else:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        future += datetime.timedelta(seconds=90)
+    future = t + datetime.timedelta(seconds=frequency)
     timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
@@ -595,30 +584,16 @@ def child_icmp_ping_v6(host_dictionary, offset=5):
             historical_upload += to_send
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
+        THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
         t = datetime.datetime.now()
-        if t.second < 15:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=15)
-        elif t.second < 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
-            future += datetime.timedelta(seconds=15)
-        elif t.second < 45:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-            future += datetime.timedelta(seconds=15)
-        elif t.second > 45:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
-            future += datetime.timedelta(seconds=15)
-        else:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=90)
+        future = t + datetime.timedelta(seconds=frequency)
         timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
-        if 15 > time_to_sleep > 0:
+        if frequency > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
-        time.sleep(random.uniform(0, 1) * offset)
 
 
-def child_icmp_ping_v4(host_dictionary, offset=5):
+def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     probe_name = "icmp_ping_v4"
     function_logger.debug(host_dictionary)
@@ -629,27 +604,16 @@ def child_icmp_ping_v4(host_dictionary, offset=5):
     label = host_dictionary['label']
     dns = host_dictionary['DNS']
     group = host_dictionary['group']
+    if host_dictionary.get("frequency"):
+        frequency = host_dictionary['frequency']
     historical_upload = ""
     if host_dictionary.get('interface') is None:
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
+    THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
     t = datetime.datetime.now()
-    if t.second < 15:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        future += datetime.timedelta(seconds=15)
-    elif t.second < 30:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
-        future += datetime.timedelta(seconds=15)
-    elif t.second < 45:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-        future += datetime.timedelta(seconds=15)
-    elif t.second > 45:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
-        future += datetime.timedelta(seconds=15)
-    else:
-        future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-        future += datetime.timedelta(seconds=90)
+    future = t + datetime.timedelta(seconds=frequency)
     timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
@@ -708,27 +672,35 @@ def child_icmp_ping_v4(host_dictionary, offset=5):
             historical_upload += to_send
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
+        THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
         t = datetime.datetime.now()
-        if t.second < 15:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=15)
-        elif t.second < 30:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
-            future += datetime.timedelta(seconds=15)
-        elif t.second < 45:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
-            future += datetime.timedelta(seconds=15)
-        elif t.second > 45:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
-            future += datetime.timedelta(seconds=15)
-        else:
-            future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
-            future += datetime.timedelta(seconds=15)
+        future = t + datetime.timedelta(seconds=frequency)
         timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
-        if 15 > time_to_sleep > 0:
+        if frequency > time_to_sleep > 0:
             THREAD_TO_BREAK.wait(time_to_sleep)
-        time.sleep(random.uniform(0, 1) * offset)
+
+        # t = datetime.datetime.now()
+        # if t.second < 15:
+        #     future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+        #     future += datetime.timedelta(seconds=15)
+        # elif t.second < 30:
+        #     future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 15)
+        #     future += datetime.timedelta(seconds=15)
+        # elif t.second < 45:
+        #     future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 30)
+        #     future += datetime.timedelta(seconds=15)
+        # elif t.second > 45:
+        #     future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 45)
+        #     future += datetime.timedelta(seconds=15)
+        # else:
+        #     future = datetime.datetime(t.year, t.month, t.day, t.hour, t.minute, 0)
+        #     future += datetime.timedelta(seconds=15)
+        # timestamp_string = str(int(future.timestamp()) * 1000000000)
+        # time_to_sleep = (future - datetime.datetime.now()).seconds
+        # if 15 > time_to_sleep > 0:
+        #     THREAD_TO_BREAK.wait(time_to_sleep)
+        # time.sleep(random.uniform(0, 1) * offset)
 
 
 def master_curl_v6_probe_stats():
