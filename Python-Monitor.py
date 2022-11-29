@@ -709,9 +709,9 @@ def master_curl_v6_probe_stats():
         child_thread_curl_v6 = []
         if HOSTS_DB.get('curl_v6'):
             function_logger.info("curl_v6 found")
-        for key in HOSTS_DB['curl_v6'].keys():
-            child_thread_curl_v6.append(threading.Thread(target=lambda: child_curl_v6(HOSTS_DB['curl_v6'][key])))
-            child_thread_curl_v6[-1].start()
+            for key in HOSTS_DB['curl_v6'].keys():
+                child_thread_curl_v6.append(threading.Thread(target=lambda: child_curl_v6(HOSTS_DB['curl_v6'][key])))
+                child_thread_curl_v6[-1].start()
     except Exception as e:
         function_logger.error("master_curl_v6_probe_stats - something went bad with auto update")
         function_logger.error("master_curl_v6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
@@ -725,9 +725,9 @@ def master_curl_v4_probe_stats():
         child_thread_curl_v4 = []
         if HOSTS_DB.get('curl_v4'):
             function_logger.info("curl_v4 found")
-        for key in HOSTS_DB['curl_v4'].keys():
-            child_thread_curl_v4.append(threading.Thread(target=lambda: child_curl_v4(HOSTS_DB['curl_v4'][key])))
-            child_thread_curl_v4[-1].start()
+            for key in HOSTS_DB['curl_v4'].keys():
+                child_thread_curl_v4.append(threading.Thread(target=lambda: child_curl_v4(HOSTS_DB['curl_v4'][key])))
+                child_thread_curl_v4[-1].start()
     except Exception as e:
         function_logger.error("master_curl_v4_probe_stats - something went bad with auto update")
         function_logger.error("master_curl_v4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
@@ -737,14 +737,13 @@ def master_curl_v4_probe_stats():
 
 def master_icmp_ping_v6_probe_stats():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
-
     try:
         child_thread_icmp_ping_v6 = []
         if HOSTS_DB.get('icmp_ping_v6'):
             function_logger.info("icmp_ping_v6 found")
-        for key in HOSTS_DB['icmp_ping_v6'].keys():
-            child_thread_icmp_ping_v6.append(threading.Thread(target=lambda: child_icmp_ping_v6(HOSTS_DB['icmp_ping_v6'][key])))
-            child_thread_icmp_ping_v6[-1].start()
+            for key in HOSTS_DB['icmp_ping_v6'].keys():
+                child_thread_icmp_ping_v6.append(threading.Thread(target=lambda: child_icmp_ping_v6(HOSTS_DB['icmp_ping_v6'][key])))
+                child_thread_icmp_ping_v6[-1].start()
     except Exception as e:
         function_logger.error("master_icmp_ping_v6_probe_stats - something went bad with auto update")
         function_logger.error("master_icmp_ping_v6_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
@@ -758,9 +757,9 @@ def master_icmp_ping_v4_probe_stats():
         child_thread_icmp_ping_v4 = []
         if HOSTS_DB.get('icmp_ping_v4'):
             function_logger.info("icmp_ping_v4 found")
-        for key in HOSTS_DB['icmp_ping_v4'].keys():
-            child_thread_icmp_ping_v4.append(threading.Thread(target=lambda: child_icmp_ping_v4(HOSTS_DB['icmp_ping_v4'][key])))
-            child_thread_icmp_ping_v4[-1].start()
+            for key in HOSTS_DB['icmp_ping_v4'].keys():
+                child_thread_icmp_ping_v4.append(threading.Thread(target=lambda: child_icmp_ping_v4(HOSTS_DB['icmp_ping_v4'][key])))
+                child_thread_icmp_ping_v4[-1].start()
     except Exception as e:
         function_logger.error("master_icmp_ping_v4_probe_stats - something went bad with auto update")
         function_logger.error("master_icmp_ping_v4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
