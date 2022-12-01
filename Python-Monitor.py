@@ -497,7 +497,7 @@ def child_curl_v4(host_dictionary, offset=5):
         timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
         # if 30 > time_to_sleep > 0: guess comit to fix timing thing
-        if 29 > time_to_sleep > 0: # guess comit to fix timing thing
+        if 29 > time_to_sleep > 0:  # guess comit to fix timing thing
             THREAD_TO_BREAK.wait(time_to_sleep)
         else:
             time.sleep(random.uniform(0, 1) * offset)  # guess comit to fix timing thing
@@ -861,12 +861,16 @@ if __name__ == '__main__':
 
     # thread per process
     if INFLUX_MODE:
-        master_thread_icmp_ping_v4 = threading.Thread(target=lambda: master_icmp_ping_v4_probe_stats())
-        master_thread_icmp_ping_v6 = threading.Thread(target=lambda: master_icmp_ping_v6_probe_stats())
-        master_thread_curl_v4 = threading.Thread(target=lambda: master_curl_v4_probe_stats())
-        master_thread_curl_v6 = threading.Thread(target=lambda: master_curl_v6_probe_stats())
-        master_thread_icmp_ping_v4.start()
-        master_thread_icmp_ping_v6.start()
-        master_thread_curl_v4.start()
-        master_thread_curl_v6.start()
+        if HOSTS_DB.get('icmp_ping_v4'):
+            master_thread_icmp_ping_v4 = threading.Thread(target=lambda: master_icmp_ping_v4_probe_stats())
+            master_thread_icmp_ping_v4.start()
+        if HOSTS_DB.get('icmp_ping_v6'):
+            master_thread_icmp_ping_v6 = threading.Thread(target=lambda: master_icmp_ping_v6_probe_stats())
+            master_thread_icmp_ping_v6.start()
+        if HOSTS_DB.get('curl_v4'):
+            master_thread_curl_v4 = threading.Thread(target=lambda: master_curl_v4_probe_stats())
+            master_thread_curl_v4.start()
+        if HOSTS_DB.get('curl_v6'):
+            master_thread_curl_v6 = threading.Thread(target=lambda: master_curl_v6_probe_stats())
+            master_thread_curl_v6.start()
 
