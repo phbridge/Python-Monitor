@@ -217,6 +217,8 @@ def child_curl_v6(host_dictionary, offset=5):
                 c.setopt(c.TIMEOUT, timeout)
                 c.setopt(c.URL, url)
                 c.setopt(c.NOBODY, 1)
+                if host_dictionary.get('interface'):
+                    c.setopt(c.INTERFACE, host_dictionary['interface'])
                 c.perform()
                 if c.getinfo(c.HTTP_CODE) == 200:
                     success += 1
@@ -390,6 +392,8 @@ def child_curl_v4(host_dictionary, offset=5):
                 c.setopt(c.TIMEOUT, timeout)
                 c.setopt(c.URL, url)
                 c.setopt(c.NOBODY, 1)
+                if host_dictionary.get('interface'):
+                    c.setopt(c.INTERFACE, host_dictionary['interface'])
                 c.perform()
                 if c.getinfo(c.HTTP_CODE) == 200:
                     success += 1
