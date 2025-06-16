@@ -768,7 +768,7 @@ def parent_icmp_ping_v4_probe_stats():
     try:
         child_thread_icmp_ping_v4 = []
         if HOSTS_DB.get('icmp_ping_v4'):
-            function_logger.info("icmp_ping_v4 found")
+            function_logger.info("icmp_ping_v4 found loading %s total records" % str(len(HOSTS_DB['icmp_ping_v4'])))
             for key in HOSTS_DB['icmp_ping_v4'].keys():
                 child_thread_icmp_ping_v4.append(threading.Thread(target=lambda: child_icmp_ping_v4(HOSTS_DB['icmp_ping_v4'][key])))
                 child_thread_icmp_ping_v4[-1].start()
