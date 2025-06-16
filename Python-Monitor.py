@@ -623,6 +623,7 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
     THREAD_TO_BREAK.wait(time_to_sleep)
     upload_delay = 0
     while not THREAD_TO_BREAK.is_set():
+        t = datetime.datetime.now()
         function_logger.debug("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         drop_pc = 0
         latency_average = -1
@@ -686,7 +687,7 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
-        t = datetime.datetime.now()
+        # t = datetime.datetime.now()
         future = t + datetime.timedelta(seconds=frequency)
         timestamp_string = str(int(future.timestamp()) * 1000000000)
         time_to_sleep = (future - datetime.datetime.now()).seconds
