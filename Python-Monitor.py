@@ -621,6 +621,7 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
     timestamp_string = str(int(future.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
+    upload_delay = 0
     while not THREAD_TO_BREAK.is_set():
         function_logger.debug("child_icmp_ping_v4 - " + label + " - sending ping with attributes hostname=" + hostname + " count=" + str(count) + " timeout=" + str(timeout) + " DSCP=" + str(tos))
         drop_pc = 0
@@ -649,12 +650,13 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
                     function_logger.warning("in in output %s" % str(e.output))
             except Exception as e:
                 drop_pc = 100
-                function_logger.error("%s- something went bad sending to doing icmp ping v4 inside")
+                function_logger.error("%s- something went bad sending to doing icmp_ping_v4 inside")
+                function_logger.error("Output from command was - %s"  % str(e.output))
                 function_logger.error("%s- Unexpected error:%s" % (label, str(sys.exc_info()[0])))
                 function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
                 function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
         except Exception as e:
-            function_logger.error("- something went bad sending to InfluxDB")
+            function_logger.error("- something went bad doing icmp_ping_v4")
             function_logger.error("%s- Unexpected error:%s" % (label, str(sys.exc_info()[0])))
             function_logger.error("%s- Unexpected error:%s" % (label, str(e)))
             function_logger.error("%s- TRACEBACK=%s" % (label, str(traceback.format_exc())))
@@ -663,17 +665,22 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
         results += 'Python_Monitor,host=%s,target=%s,label=%s,tos=%s,dns=%s,group=%s,probe=%s,iface=%s latencyAvg=%s,latencyMin=%s,latencyMax=%s,latencyDroppc=%s \n' % \
                    (FLASK_HOSTNAME, hostname, label, tos, dns, group, probe_name, interface, str("{:.2f}".format(float(latency_average))), str("{:.2f}".format(float(latency_min))), str("{:.2f}".format(float(latency_max))), drop_pc)
         to_send = ""
+
         for each in results.splitlines():
             to_send += each + " " + timestamp_string + "\n"
         if not historical_upload == "":
             function_logger.debug("adding history to upload")
             to_send += historical_upload
-        if update_influx(to_send):
-            historical_upload = ""
-        else:
-            historical_upload = ""
-            function_logger.debug("adding to history")
-            historical_upload += to_send
+        upload_delay += 1
+        while upload_delay > 5:
+            if update_influx(to_send):
+                historical_upload = ""
+                upload_delay = 0
+            else:
+                historical_upload = ""
+                function_logger.debug("adding to history")
+                historical_upload += to_send
+
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
         THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
@@ -725,6 +732,7 @@ def master_curl_v6_probe_stats():
 
 def master_curl_v4_probe_stats():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
+    function_logger.info("curl_v4 found")
     try:
         child_thread_curl_v4 = []
         if HOSTS_DB.get('curl_v4'):
@@ -755,7 +763,7 @@ def master_icmp_ping_v6_probe_stats():
         function_logger.error("master_icmp_ping_v6_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
 
 
-def master_icmp_ping_v4_probe_stats():
+def parent_icmp_ping_v4_probe_stats():
     function_logger = logger.getChild("%s.%s.%s" % (inspect.stack()[2][3], inspect.stack()[1][3], inspect.stack()[0][3]))
     try:
         child_thread_icmp_ping_v4 = []
@@ -765,10 +773,10 @@ def master_icmp_ping_v4_probe_stats():
                 child_thread_icmp_ping_v4.append(threading.Thread(target=lambda: child_icmp_ping_v4(HOSTS_DB['icmp_ping_v4'][key])))
                 child_thread_icmp_ping_v4[-1].start()
     except Exception as e:
-        function_logger.error("master_icmp_ping_v4_probe_stats - something went bad with auto update")
-        function_logger.error("master_icmp_ping_v4_probe_stats - Unexpected error:" + str(sys.exc_info()[0]))
-        function_logger.error("master_icmp_ping_v4_probe_stats - Unexpected error:" + str(e))
-        function_logger.error("master_icmp_ping_v4_probe_stats - TRACEBACK=" + str(traceback.format_exc()))
+        function_logger.error("something went bad with starting child icmp_ping_v4 services")
+        function_logger.error("Unexpected error:" + str(sys.exc_info()[0]))
+        function_logger.error("Unexpected error:" + str(e))
+        function_logger.error("TRACEBACK=" + str(traceback.format_exc()))
 
 
 def update_influx(raw_string, timestamp=None):
@@ -862,12 +870,13 @@ if __name__ == '__main__':
     # GET_CURRENT_DB
     logger.info("__main__ - " + "GET_CURRENT_DB")
     HOSTS_DB = load_hosts_file_json()
+    print (HOSTS_DB)
 
     # thread per process
     if INFLUX_MODE:
         if HOSTS_DB.get('icmp_ping_v4'):
-            master_thread_icmp_ping_v4 = threading.Thread(target=lambda: master_icmp_ping_v4_probe_stats())
-            master_thread_icmp_ping_v4.start()
+            parent_thread_icmp_ping_v4 = threading.Thread(target=lambda: parent_icmp_ping_v4_probe_stats())
+            parent_thread_icmp_ping_v4.start()
         if HOSTS_DB.get('icmp_ping_v6'):
             master_thread_icmp_ping_v6 = threading.Thread(target=lambda: master_icmp_ping_v6_probe_stats())
             master_thread_icmp_ping_v6.start()
