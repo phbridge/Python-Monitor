@@ -615,10 +615,10 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
         interface = INTERFACE
     else:
         interface = host_dictionary['interface']
-    THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
+    # THREAD_TO_BREAK.wait(random.uniform(0, 1) * frequency)
     t = datetime.datetime.now()
     future = t + datetime.timedelta(seconds=frequency)
-    timestamp_string = str(int(future.timestamp()) * 1000000000)
+    timestamp_string = str(int(t.timestamp()) * 1000000000)
     time_to_sleep = (future - datetime.datetime.now()).seconds
     THREAD_TO_BREAK.wait(time_to_sleep)
     upload_delay = 0
@@ -668,6 +668,7 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
         to_send = ""
 
         for each in results.splitlines():
+            timestamp_string = str(int(datetime.datetime.now().timestamp()) * 1000000000)
             to_send += each + " " + timestamp_string + "\n"
         if not historical_upload == "":
             function_logger.debug("adding history to upload")
