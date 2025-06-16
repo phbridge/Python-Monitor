@@ -672,7 +672,7 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
             function_logger.debug("adding history to upload")
             to_send += historical_upload
         upload_delay += 1
-        while upload_delay > 5:
+        if upload_delay > 5:
             if update_influx(to_send):
                 historical_upload = ""
                 upload_delay = 0
@@ -680,6 +680,8 @@ def child_icmp_ping_v4(host_dictionary, offset=5, frequency=15):
                 historical_upload = ""
                 function_logger.debug("adding to history")
                 historical_upload += to_send
+        else:
+            historical_upload += to_send
 
         tt3 = time.time()
         function_logger.debug("%s - tt1-tt2=%s tt2-tt3=%s tt1-tt3=%s" % (label, str("{:.2f}".format(float(tt2 - tt1))), str("{:.2f}".format(float(tt3 - tt2))), str("{:.2f}".format(float(tt3 - tt1)))))
