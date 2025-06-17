@@ -874,7 +874,7 @@ if __name__ == '__main__':
     # GET_CURRENT_DB
     logger.info("__main__ - " + "GET_CURRENT_DB")
     HOSTS_DB = load_hosts_file_json()
-    print (HOSTS_DB)
+    # print (HOSTS_DB)
 
     # thread per process
     if INFLUX_MODE:
